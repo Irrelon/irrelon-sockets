@@ -47,7 +47,7 @@ class SocketBase {
 		if (this._env === CLIENT) return this._commandMap.length - 1;
 
 		// Update any connected clients with the new command
-		this.sendCommand("defineCommand", this._commandMap.length - 1);
+		this.sendCommand("defineCommand", command);
 		return this._commandMap.length - 1;
 	}
 
@@ -60,7 +60,7 @@ class SocketBase {
 	}
 
 	sendCommand (cmd, data, socket) {
-		if (!socket) return;
+		if (!socket) return console.log("sendCommand() no socket provided!", cmd, data, socket);
 
 		const commandId = this.defineCommand(cmd);
 		const message = [commandId, data];
@@ -78,7 +78,17 @@ class SocketBase {
 		const data = message[1];
 		const command = this.commandById(commandId);
 
-		console.log("Emitting", COMMAND, command, data);
+		if (!command) {
+			console.error(`Unknown commandId "${commandId}" received with data`, data);
+			return {
+				message,
+				commandId,
+				command,
+				data
+			};
+		}
+
+		console.log(`Emitting command with name ${command} and data`, data);
 		this.emitId(COMMAND, command, data);
 
 		return {
@@ -89,12 +99,13 @@ class SocketBase {
 		};
 	}
 
-	_encode (data) {
-		return JSON.stringify(data);
+	_encode ([commandId, data]) {
+		return `${commandId}|${JSON.stringify(data)}`;
 	}
 
 	_decode (data) {
-		return JSON.parse(data);
+		const parts = data.split("|");
+		return [parts[0], JSON.parse(parts[1])];
 	}
 }
 

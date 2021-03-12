@@ -12,8 +12,9 @@ server.on("stopped", () => {
 
 server.start(9999);
 
-server.on("clientConnect", (client) => {
-
+server.on("clientConnect", (clientId) => {
+	console.log("Client connected", clientId);
+	server.sendCommand("fooBar", {"itWorked": true}, clientId);
 });
 
 server.start(9999);

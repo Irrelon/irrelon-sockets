@@ -56,7 +56,7 @@ var IrrelonSockets =
 
 	var Client = __webpack_require__(2);
 
-	var Server = __webpack_require__(20);
+	var Server = __webpack_require__(26);
 
 	module.exports = {
 	  Client: Client,
@@ -95,7 +95,7 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(19),
+	var _require = __webpack_require__(25),
 	    CLIENT = _require.CLIENT,
 	    COMMAND = _require.COMMAND;
 
@@ -422,21 +422,23 @@ var IrrelonSockets =
 
 	var _interopRequireDefault = __webpack_require__(3);
 
+	var _slicedToArray2 = _interopRequireDefault(__webpack_require__(17));
+
 	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
 
 	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
 
 	var _defineProperty2 = _interopRequireDefault(__webpack_require__(14));
 
-	var Emitter = __webpack_require__(17);
+	var Emitter = __webpack_require__(23);
 
-	var _require = __webpack_require__(19),
+	var _require = __webpack_require__(25),
 	    COMMAND = _require.COMMAND;
 
-	var _require2 = __webpack_require__(19),
+	var _require2 = __webpack_require__(25),
 	    CLIENT = _require2.CLIENT;
 
-	var _require3 = __webpack_require__(19),
+	var _require3 = __webpack_require__(25),
 	    DISCONNECTED = _require3.DISCONNECTED;
 
 	var SocketBase = /*#__PURE__*/function () {
@@ -491,7 +493,7 @@ var IrrelonSockets =
 
 	      if (this._env === CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
 
-	      this.sendCommand("defineCommand", this._commandMap.length - 1);
+	      this.sendCommand("defineCommand", command);
 	      return this._commandMap.length - 1;
 	    }
 	  }, {
@@ -507,21 +509,34 @@ var IrrelonSockets =
 	  }, {
 	    key: "sendCommand",
 	    value: function sendCommand(cmd, data, socket) {
-	      if (!socket) return;
+	      if (!socket) return console.log("sendCommand() no socket provided!", cmd, data, socket);
 	      var commandId = this.defineCommand(cmd);
 	      var message = [commandId, data];
 	      console.log("sendCommand", message);
-	      socket.send(JSON.stringify(message));
+	      socket.send(this._encode(message));
 	    }
 	  }, {
 	    key: "_onMessage",
 	    value: function _onMessage(rawMessage) {
 	      console.log("Raw message incoming", rawMessage);
-	      var message = JSON.parse(rawMessage.data);
+
+	      var message = this._decode(rawMessage.data);
+
 	      var commandId = message[0];
 	      var data = message[1];
 	      var command = this.commandById(commandId);
-	      console.log("Emitting", COMMAND, command, data);
+
+	      if (!command) {
+	        console.error("Unknown commandId \"".concat(commandId, "\" received with data"), data);
+	        return {
+	          message: message,
+	          commandId: commandId,
+	          command: command,
+	          data: data
+	        };
+	      }
+
+	      console.log("Emitting command with name ".concat(command, " and data"), data);
 	      this.emitId(COMMAND, command, data);
 	      return {
 	        message: message,
@@ -532,13 +547,18 @@ var IrrelonSockets =
 	    }
 	  }, {
 	    key: "_encode",
-	    value: function _encode(data) {
-	      return JSON.stringify(data);
+	    value: function _encode(_ref) {
+	      var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
+	          commandId = _ref2[0],
+	          data = _ref2[1];
+
+	      return "".concat(commandId, "|").concat(JSON.stringify(data));
 	    }
 	  }, {
 	    key: "_decode",
 	    value: function _decode(data) {
-	      return JSON.parse(data);
+	      var parts = data.split("|");
+	      return [parts[0], JSON.parse(parts[1])];
 	    }
 	  }]);
 	  return SocketBase;
@@ -549,6 +569,116 @@ var IrrelonSockets =
 
 /***/ }),
 /* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var arrayWithHoles = __webpack_require__(18);
+
+	var iterableToArrayLimit = __webpack_require__(19);
+
+	var unsupportedIterableToArray = __webpack_require__(20);
+
+	var nonIterableRest = __webpack_require__(22);
+
+	function _slicedToArray(arr, i) {
+	  return arrayWithHoles(arr) || iterableToArrayLimit(arr, i) || unsupportedIterableToArray(arr, i) || nonIterableRest();
+	}
+
+	module.exports = _slicedToArray;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+	function _arrayWithHoles(arr) {
+	  if (Array.isArray(arr)) return arr;
+	}
+
+	module.exports = _arrayWithHoles;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+	function _iterableToArrayLimit(arr, i) {
+	  if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+	  var _arr = [];
+	  var _n = true;
+	  var _d = false;
+	  var _e = undefined;
+
+	  try {
+	    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+	      _arr.push(_s.value);
+
+	      if (i && _arr.length === i) break;
+	    }
+	  } catch (err) {
+	    _d = true;
+	    _e = err;
+	  } finally {
+	    try {
+	      if (!_n && _i["return"] != null) _i["return"]();
+	    } finally {
+	      if (_d) throw _e;
+	    }
+	  }
+
+	  return _arr;
+	}
+
+	module.exports = _iterableToArrayLimit;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var arrayLikeToArray = __webpack_require__(21);
+
+	function _unsupportedIterableToArray(o, minLen) {
+	  if (!o) return;
+	  if (typeof o === "string") return arrayLikeToArray(o, minLen);
+	  var n = Object.prototype.toString.call(o).slice(8, -1);
+	  if (n === "Object" && o.constructor) n = o.constructor.name;
+	  if (n === "Map" || n === "Set") return Array.from(o);
+	  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+	}
+
+	module.exports = _unsupportedIterableToArray;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports) {
+
+	function _arrayLikeToArray(arr, len) {
+	  if (len == null || len > arr.length) len = arr.length;
+
+	  for (var i = 0, arr2 = new Array(len); i < len; i++) {
+	    arr2[i] = arr[i];
+	  }
+
+	  return arr2;
+	}
+
+	module.exports = _arrayLikeToArray;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports) {
+
+	function _nonIterableRest() {
+	  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+
+	module.exports = _nonIterableRest;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -623,7 +753,7 @@ var IrrelonSockets =
 
 	var _typeof2 = _interopRequireDefault(__webpack_require__(10));
 
-	var Overload = __webpack_require__(18);
+	var Overload = __webpack_require__(24);
 
 	var EventMethods = {
 	  on: new Overload({
@@ -1406,7 +1536,7 @@ var IrrelonSockets =
 	module.exports = Emitter;
 
 /***/ }),
-/* 18 */
+/* 24 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -1570,7 +1700,7 @@ var IrrelonSockets =
 	module.exports = Overload;
 
 /***/ }),
-/* 19 */
+/* 25 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -1595,12 +1725,14 @@ var IrrelonSockets =
 	};
 
 /***/ }),
-/* 20 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var _interopRequireDefault = __webpack_require__(3);
+
+	var _slicedToArray2 = _interopRequireDefault(__webpack_require__(17));
 
 	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
 
@@ -1626,10 +1758,10 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(19),
+	var _require = __webpack_require__(25),
 	    COMMAND = _require.COMMAND;
 
-	var _require2 = __webpack_require__(19),
+	var _require2 = __webpack_require__(25),
 	    SERVER = _require2.SERVER,
 	    STARTED = _require2.STARTED,
 	    STOPPED = _require2.STOPPED;
@@ -1691,10 +1823,24 @@ var IrrelonSockets =
 	      this.state(STOPPED);
 	    }
 	  }, {
+	    key: "broadcastCommand",
+	    value: function broadcastCommand(cmd, data) {
+	      var _this2 = this;
+
+	      Object.entries(this._socketById).forEach(function (_ref) {
+	        var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
+	            key = _ref2[0],
+	            socket = _ref2[1];
+
+	        (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "sendCommand", _this2).call(_this2, cmd, data, socket);
+	      });
+	    }
+	  }, {
 	    key: "sendCommand",
 	    value: function sendCommand(cmd, data, socketId) {
+	      if (!socketId) return this.broadcastCommand(cmd, data);
 	      var socket = this._socketById[socketId];
-	      if (!socket) return;
+	      if (!socket) return console.log("Socket required to send message!");
 	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "sendCommand", this).call(this, cmd, data, socket);
 	    }
 	  }, {

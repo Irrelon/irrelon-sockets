@@ -27,9 +27,17 @@ class SocketServer extends SocketBase {
 		this.state(STOPPED);
 	}
 
+	broadcastCommand (cmd, data) {
+		Object.entries(this._socketById).forEach(([key, socket]) => {
+			super.sendCommand(cmd, data, socket);
+		});
+	}
+
 	sendCommand (cmd, data, socketId) {
+		if (!socketId) return this.broadcastCommand(cmd, data);
+
 		const socket = this._socketById[socketId];
-		if (!socket) return;
+		if (!socket) return console.log("Socket required to send message!");
 
 		super.sendCommand(cmd, data, socket);
 	}
