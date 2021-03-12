@@ -56,7 +56,7 @@ var IrrelonSockets =
 
 	var Client = __webpack_require__(2);
 
-	var Server = __webpack_require__(26);
+	var Server = __webpack_require__(27);
 
 	module.exports = {
 	  Client: Client,
@@ -95,7 +95,7 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(25),
+	var _require = __webpack_require__(26),
 	    CLIENT = _require.CLIENT,
 	    COMMAND = _require.COMMAND;
 
@@ -433,13 +433,19 @@ var IrrelonSockets =
 	var Emitter = __webpack_require__(23);
 
 	var _require = __webpack_require__(25),
-	    COMMAND = _require.COMMAND;
+	    jsonEncoder = _require.jsonEncoder;
 
 	var _require2 = __webpack_require__(25),
-	    CLIENT = _require2.CLIENT;
+	    stringArrayEncoder = _require2.stringArrayEncoder;
 
-	var _require3 = __webpack_require__(25),
-	    DISCONNECTED = _require3.DISCONNECTED;
+	var _require3 = __webpack_require__(26),
+	    COMMAND = _require3.COMMAND;
+
+	var _require4 = __webpack_require__(26),
+	    CLIENT = _require4.CLIENT;
+
+	var _require5 = __webpack_require__(26),
+	    DISCONNECTED = _require5.DISCONNECTED;
 
 	var SocketBase = /*#__PURE__*/function () {
 	  function SocketBase(env) {
@@ -448,6 +454,10 @@ var IrrelonSockets =
 	    (0, _classCallCheck2["default"])(this, SocketBase);
 	    (0, _defineProperty2["default"])(this, "_socketById", {});
 	    (0, _defineProperty2["default"])(this, "_commandMap", ["commandMap", "defineCommand"]);
+	    (0, _defineProperty2["default"])(this, "_commandEncoding", {
+	      "*": jsonEncoder,
+	      "commandMap": stringArrayEncoder
+	    });
 	    (0, _defineProperty2["default"])(this, "_idCounter", 0);
 	    (0, _defineProperty2["default"])(this, "_state", DISCONNECTED);
 	    (0, _defineProperty2["default"])(this, "state", function (newState) {
@@ -513,7 +523,7 @@ var IrrelonSockets =
 	      var commandId = this.defineCommand(cmd);
 	      var message = [commandId, data];
 	      console.log("sendCommand", message);
-	      socket.send(this._encode(message));
+	      socket.send(this._encode(cmd, message));
 	    }
 	  }, {
 	    key: "_onMessage",
@@ -547,18 +557,23 @@ var IrrelonSockets =
 	    }
 	  }, {
 	    key: "_encode",
-	    value: function _encode(_ref) {
+	    value: function _encode(command, _ref) {
 	      var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
 	          commandId = _ref2[0],
 	          data = _ref2[1];
 
-	      return "".concat(commandId, "|").concat(JSON.stringify(data));
+	      var encoding = this._commandEncoding[command] || this._commandEncoding["*"];
+	      if (!encoding) throw new Error("No command encoding for \"".concat(command, "\" (").concat(commandId, ") and no default encoder specified under the \"*\" command name!"));
+	      return "".concat(commandId, "|").concat(encoding.encode(data));
 	    }
 	  }, {
 	    key: "_decode",
 	    value: function _decode(data) {
 	      var parts = data.split("|");
-	      return [parts[0], JSON.parse(parts[1])];
+	      var command = this.commandById(parts[0]);
+	      var encoding = this._commandEncoding[command] || this._commandEncoding["*"];
+	      if (!encoding) throw new Error("No command encoding for \"".concat(command, "\" (").concat(parts[0], ") and no default encoder specified under the \"*\" command name!"));
+	      return [parts[0], encoding.decode(parts[1])];
 	    }
 	  }]);
 	  return SocketBase;
@@ -1705,6 +1720,33 @@ var IrrelonSockets =
 
 	"use strict";
 
+	var jsonEncoder = {
+	  "encode": function encode(data) {
+	    return JSON.stringify(data);
+	  },
+	  "decode": function decode(data) {
+	    return JSON.parse(data);
+	  }
+	};
+	var stringArrayEncoder = {
+	  "encode": function encode(data) {
+	    return data.join(",");
+	  },
+	  "decode": function decode(data) {
+	    return data.split(",");
+	  }
+	};
+	module.exports = {
+	  jsonEncoder: jsonEncoder,
+	  stringArrayEncoder: stringArrayEncoder
+	};
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
 	var DISCONNECTED = 0;
 	var CONNECTING = 1;
 	var CONNECTED = 2;
@@ -1725,7 +1767,7 @@ var IrrelonSockets =
 	};
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1758,10 +1800,10 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(25),
+	var _require = __webpack_require__(26),
 	    COMMAND = _require.COMMAND;
 
-	var _require2 = __webpack_require__(25),
+	var _require2 = __webpack_require__(26),
 	    SERVER = _require2.SERVER,
 	    STARTED = _require2.STARTED,
 	    STOPPED = _require2.STOPPED;

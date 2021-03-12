@@ -1,4 +1,6 @@
 const Emitter = require("@irrelon/emitter");
+const {jsonEncoder} = require("./encoders");
+const {stringArrayEncoder} = require("./encoders");
 const {COMMAND} = require("./enums");
 const {CLIENT} = require("./enums");
 const {DISCONNECTED} = require("./enums");
@@ -6,6 +8,10 @@ const {DISCONNECTED} = require("./enums");
 class SocketBase {
 	_socketById = {};
 	_commandMap = ["commandMap", "defineCommand"];
+	_commandEncoding = {
+		"*": jsonEncoder,
+		"commandMap": stringArrayEncoder
+	};
 	_idCounter = 0;
 	_state = DISCONNECTED;
 
@@ -67,7 +73,7 @@ class SocketBase {
 
 		console.log("sendCommand", message);
 
-		socket.send(this._encode(message));
+		socket.send(this._encode(cmd, message));
 	}
 
 	_onMessage (rawMessage) {
@@ -99,13 +105,21 @@ class SocketBase {
 		};
 	}
 
-	_encode ([commandId, data]) {
-		return `${commandId}|${JSON.stringify(data)}`;
+	_encode (command, [commandId, data]) {
+		const encoding = this._commandEncoding[command] || this._commandEncoding["*"];
+		if (!encoding) throw new Error(`No command encoding for "${command}" (${commandId}) and no default encoder specified under the "*" command name!`);
+
+		return `${commandId}|${encoding.encode(data)}`;
 	}
 
 	_decode (data) {
 		const parts = data.split("|");
-		return [parts[0], JSON.parse(parts[1])];
+		const command = this.commandById(parts[0]);
+		const encoding = this._commandEncoding[command] || this._commandEncoding["*"];
+
+		if (!encoding) throw new Error(`No command encoding for "${command}" (${parts[0]}) and no default encoder specified under the "*" command name!`);
+
+		return [parts[0], encoding.decode(parts[1])];
 	}
 }
 
