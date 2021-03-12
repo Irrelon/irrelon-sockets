@@ -124,7 +124,7 @@ var IrrelonSockets =
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onDefineCommand", function (data) {
 	      console.log("_onDefineCommand", data);
 
-	      _this.defineCommand(data);
+	      _this.defineCommand(data[0], data[1]);
 	    });
 
 	    _this.on(COMMAND, "commandMap", _this._onCommandMap);
@@ -432,20 +432,12 @@ var IrrelonSockets =
 
 	var Emitter = __webpack_require__(23);
 
-	var _require = __webpack_require__(25),
-	    jsonEncoder = _require.jsonEncoder;
+	var encoders = __webpack_require__(25);
 
-	var _require2 = __webpack_require__(25),
-	    stringArrayEncoder = _require2.stringArrayEncoder;
-
-	var _require3 = __webpack_require__(26),
-	    COMMAND = _require3.COMMAND;
-
-	var _require4 = __webpack_require__(26),
-	    CLIENT = _require4.CLIENT;
-
-	var _require5 = __webpack_require__(26),
-	    DISCONNECTED = _require5.DISCONNECTED;
+	var _require = __webpack_require__(26),
+	    COMMAND = _require.COMMAND,
+	    CLIENT = _require.CLIENT,
+	    DISCONNECTED = _require.DISCONNECTED;
 
 	var SocketBase = /*#__PURE__*/function () {
 	  function SocketBase(env) {
@@ -453,10 +445,12 @@ var IrrelonSockets =
 
 	    (0, _classCallCheck2["default"])(this, SocketBase);
 	    (0, _defineProperty2["default"])(this, "_socketById", {});
+	    (0, _defineProperty2["default"])(this, "_dictionary", []);
 	    (0, _defineProperty2["default"])(this, "_commandMap", ["commandMap", "defineCommand"]);
 	    (0, _defineProperty2["default"])(this, "_commandEncoding", {
-	      "*": jsonEncoder,
-	      "commandMap": stringArrayEncoder
+	      "*": encoders.jsonEncoder,
+	      "commandMap": encoders.stringArrayEncoder,
+	      "defineCommand": encoders.stringArrayEncoder
 	    });
 	    (0, _defineProperty2["default"])(this, "_idCounter", 0);
 	    (0, _defineProperty2["default"])(this, "_state", DISCONNECTED);
@@ -467,9 +461,36 @@ var IrrelonSockets =
 	      _this.emit("state", newState);
 	    });
 	    this._env = env;
+	    this.generateDictionary();
 	  }
 
 	  (0, _createClass2["default"])(SocketBase, [{
+	    key: "generateDictionary",
+	    value: function generateDictionary() {
+	      var _this2 = this;
+
+	      this._commandMap.forEach(function (command) {
+	        _this2._dictionary.push(command);
+	      });
+	    }
+	  }, {
+	    key: "toDictionaryId",
+	    value: function toDictionaryId(word) {
+	      var index = this._dictionary.indexOf(word);
+
+	      if (index === -1) {
+	        console.error("Dictionary does not contain term \"".concat(word, "\""));
+	      }
+
+	      return String.fromCharCode(index);
+	    }
+	  }, {
+	    key: "fromDictionaryId",
+	    value: function fromDictionaryId(id) {
+	      var index = id.charCodeAt(0);
+	      return this._dictionary[index];
+	    }
+	  }, {
 	    key: "log",
 	    value: function log() {
 	      var _console$log;
@@ -495,16 +516,39 @@ var IrrelonSockets =
 	    }
 	  }, {
 	    key: "defineCommand",
-	    value: function defineCommand(command) {
+	    value: function defineCommand(command, encoderNameOrObject) {
+	      var encoderName;
+	      var encoder;
 	      var existingCommandId = this.idByCommand(command);
-	      if (existingCommandId > -1) return existingCommandId; // Add the new command
+	      if (existingCommandId > -1) return existingCommandId;
+
+	      if (typeof encoderNameOrObject === "string") {
+	        // Map to an encoder object
+	        encoderName = encoderNameOrObject;
+	        encoder = encoders[encoderNameOrObject];
+	      } // Add the new command
+
+
+	      this._dictionary.push(command);
 
 	      this._commandMap.push(command);
 
+	      this._commandEncoding[command] = encoder;
 	      if (this._env === CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
 
-	      this.sendCommand("defineCommand", command);
+	      this.sendCommand("defineCommand", [command, encoderName || this.encoderNameByObject(encoder)]);
 	      return this._commandMap.length - 1;
+	    }
+	  }, {
+	    key: "encoderNameByObject",
+	    value: function encoderNameByObject(obj) {
+	      return Object.entries(encoders).reduce(function (name, _ref) {
+	        var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
+	            key = _ref2[0],
+	            encoder = _ref2[1];
+
+	        return encoder === obj ? key : "";
+	      }, "");
 	    }
 	  }, {
 	    key: "commandById",
@@ -557,12 +601,13 @@ var IrrelonSockets =
 	    }
 	  }, {
 	    key: "_encode",
-	    value: function _encode(command, _ref) {
-	      var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
-	          commandId = _ref2[0],
-	          data = _ref2[1];
+	    value: function _encode(command, _ref3) {
+	      var _ref4 = (0, _slicedToArray2["default"])(_ref3, 2),
+	          commandId = _ref4[0],
+	          data = _ref4[1];
 
 	      var encoding = this._commandEncoding[command] || this._commandEncoding["*"];
+	      if (!this._commandEncoding[command]) console.warn("No specific encoder for command \"".concat(command, "\" (").concat(commandId, ")"));
 	      if (!encoding) throw new Error("No command encoding for \"".concat(command, "\" (").concat(commandId, ") and no default encoder specified under the \"*\" command name!"));
 	      return "".concat(commandId, "|").concat(encoding.encode(data));
 	    }
@@ -572,7 +617,8 @@ var IrrelonSockets =
 	      var parts = data.split("|");
 	      var command = this.commandById(parts[0]);
 	      var encoding = this._commandEncoding[command] || this._commandEncoding["*"];
-	      if (!encoding) throw new Error("No command encoding for \"".concat(command, "\" (").concat(parts[0], ") and no default encoder specified under the \"*\" command name!"));
+	      if (!this._commandEncoding[command]) console.warn("No specific decoder for command \"".concat(command, "\" (").concat(parts[0], ")"));
+	      if (!encoding) throw new Error("No command decoding for \"".concat(command, "\" (").concat(parts[0], ") and no default decoder specified under the \"*\" command name!"));
 	      return [parts[0], encoding.decode(parts[1])];
 	    }
 	  }]);

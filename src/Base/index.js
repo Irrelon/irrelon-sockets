@@ -1,22 +1,43 @@
 const Emitter = require("@irrelon/emitter");
-const {jsonEncoder} = require("./encoders");
-const {stringArrayEncoder} = require("./encoders");
-const {COMMAND} = require("./enums");
-const {CLIENT} = require("./enums");
-const {DISCONNECTED} = require("./enums");
+const encoders = require("./encoders");
+const {COMMAND, CLIENT, DISCONNECTED} = require("./enums");
 
 class SocketBase {
 	_socketById = {};
+	_dictionary = [];
 	_commandMap = ["commandMap", "defineCommand"];
 	_commandEncoding = {
-		"*": jsonEncoder,
-		"commandMap": stringArrayEncoder
+		"*": encoders.jsonEncoder,
+		"commandMap": encoders.stringArrayEncoder,
+		"defineCommand": encoders.stringArrayEncoder
 	};
 	_idCounter = 0;
 	_state = DISCONNECTED;
 
 	constructor (env) {
 		this._env = env;
+		this.generateDictionary();
+	}
+
+	generateDictionary () {
+		this._commandMap.forEach((command) => {
+			this._dictionary.push(command);
+		});
+	}
+
+	toDictionaryId (word) {
+		const index = this._dictionary.indexOf(word);
+
+		if (index === -1) {
+			console.error(`Dictionary does not contain term "${word}"`);
+		}
+
+		return String.fromCharCode(index);
+	}
+
+	fromDictionaryId (id) {
+		const index = id.charCodeAt(0);
+		return this._dictionary[index];
 	}
 
 	state = (newState) => {
@@ -44,17 +65,35 @@ class SocketBase {
 		this._commandMap = commandMap;
 	}
 
-	defineCommand (command) {
+	defineCommand (command, encoderNameOrObject) {
+		let encoderName;
+		let encoder;
+
 		const existingCommandId = this.idByCommand(command);
 		if (existingCommandId > -1) return existingCommandId;
 
+		if (typeof encoderNameOrObject === "string") {
+			// Map to an encoder object
+			encoderName = encoderNameOrObject;
+			encoder = encoders[encoderNameOrObject];
+		}
+
 		// Add the new command
+		this._dictionary.push(command);
 		this._commandMap.push(command);
+		this._commandEncoding[command] = encoder;
+
 		if (this._env === CLIENT) return this._commandMap.length - 1;
 
 		// Update any connected clients with the new command
-		this.sendCommand("defineCommand", command);
+		this.sendCommand("defineCommand", [command, encoderName || this.encoderNameByObject(encoder)]);
 		return this._commandMap.length - 1;
+	}
+
+	encoderNameByObject (obj) {
+		return Object.entries(encoders).reduce((name, [key, encoder]) => {
+			return encoder === obj ? key : "";
+		}, "");
 	}
 
 	commandById (id) {
@@ -107,6 +146,7 @@ class SocketBase {
 
 	_encode (command, [commandId, data]) {
 		const encoding = this._commandEncoding[command] || this._commandEncoding["*"];
+		if (!this._commandEncoding[command]) console.warn(`No specific encoder for command "${command}" (${commandId})`);
 		if (!encoding) throw new Error(`No command encoding for "${command}" (${commandId}) and no default encoder specified under the "*" command name!`);
 
 		return `${commandId}|${encoding.encode(data)}`;
@@ -117,7 +157,8 @@ class SocketBase {
 		const command = this.commandById(parts[0]);
 		const encoding = this._commandEncoding[command] || this._commandEncoding["*"];
 
-		if (!encoding) throw new Error(`No command encoding for "${command}" (${parts[0]}) and no default encoder specified under the "*" command name!`);
+		if (!this._commandEncoding[command]) console.warn(`No specific decoder for command "${command}" (${parts[0]})`);
+		if (!encoding) throw new Error(`No command decoding for "${command}" (${parts[0]}) and no default decoder specified under the "*" command name!`);
 
 		return [parts[0], encoding.decode(parts[1])];
 	}

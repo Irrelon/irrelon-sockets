@@ -36,7 +36,7 @@ class SocketClient extends SocketBase {
 
 	_onDefineCommand = (data) => {
 		console.log("_onDefineCommand", data);
-		this.defineCommand(data);
+		this.defineCommand(data[0], data[1]);
 	}
 }
 
