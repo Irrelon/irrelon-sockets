@@ -1,9 +1,19 @@
 const jsonEncoder = {
 	"encode": (data) => {
+		if (data === undefined) return "";
 		return JSON.stringify(data);
 	},
 	"decode": (data) => {
-		return JSON.parse(data);
+		if (data === undefined || data === null || data === "") return "";
+		let decoded;
+
+		try {
+			decoded = JSON.parse(data);
+		} catch (err) {
+			decoded = "";
+		}
+
+		return decoded;
 	}
 };
 
