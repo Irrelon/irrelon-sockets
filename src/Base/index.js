@@ -67,13 +67,13 @@ class SocketBase {
 
 		console.log("sendCommand", message);
 
-		socket.send(JSON.stringify(message));
+		socket.send(this._encode(message));
 	}
 
 	_onMessage (rawMessage) {
 		console.log("Raw message incoming", rawMessage);
 
-		const message = JSON.parse(rawMessage.data);
+		const message = this._decode(rawMessage.data);
 		const commandId = message[0];
 		const data = message[1];
 		const command = this.commandById(commandId);
