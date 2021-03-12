@@ -54,30 +54,106 @@ var IrrelonSockets =
 
 	"use strict";
 
-	var _interopRequireDefault = __webpack_require__(2);
+	var Client = __webpack_require__(2);
 
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	Object.defineProperty(exports, "Client", {
-	  enumerable: true,
-	  get: function get() {
-	    return _Client2["default"];
-	  }
-	});
-	Object.defineProperty(exports, "Server", {
-	  enumerable: true,
-	  get: function get() {
-	    return _Server2["default"];
-	  }
-	});
+	var Server = __webpack_require__(20);
 
-	var _Client2 = _interopRequireDefault(__webpack_require__(3));
-
-	var _Server2 = _interopRequireDefault(__webpack_require__(4));
+	module.exports = {
+	  Client: Client,
+	  Server: Server
+	};
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _interopRequireDefault = __webpack_require__(3);
+
+	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
+
+	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
+
+	var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(6));
+
+	var _inherits2 = _interopRequireDefault(__webpack_require__(7));
+
+	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(9));
+
+	var _get2 = _interopRequireDefault(__webpack_require__(11));
+
+	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(13));
+
+	var _defineProperty2 = _interopRequireDefault(__webpack_require__(14));
+
+	function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
+
+	function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+	var WebSocket = __webpack_require__(15);
+
+	var SocketBase = __webpack_require__(16);
+
+	var _require = __webpack_require__(19),
+	    CLIENT = _require.CLIENT,
+	    COMMAND = _require.COMMAND;
+
+	var SocketClient = /*#__PURE__*/function (_SocketBase) {
+	  (0, _inherits2["default"])(SocketClient, _SocketBase);
+
+	  var _super = _createSuper(SocketClient);
+
+	  function SocketClient() {
+	    var _thisSuper, _this;
+
+	    (0, _classCallCheck2["default"])(this, SocketClient);
+	    _this = _super.call(this, CLIENT); // Define the default command listeners
+
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onConnected", function () {
+	      _this.emit("connected");
+	    });
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onMessageFromServer", function (rawMessage) {
+	      (0, _get2["default"])((_thisSuper = (0, _assertThisInitialized2["default"])(_this), (0, _getPrototypeOf2["default"])(SocketClient.prototype)), "_onMessage", _thisSuper).call(_thisSuper, rawMessage);
+	    });
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onCommandMap", function (data) {
+	      console.log("_onCommandMap", data);
+
+	      _this.commandMap(data);
+	    });
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onDefineCommand", function (data) {
+	      console.log("_onDefineCommand", data);
+
+	      _this.defineCommand(data);
+	    });
+
+	    _this.on(COMMAND, "commandMap", _this._onCommandMap);
+
+	    _this.on(COMMAND, "defineCommand", _this._onDefineCommand);
+
+	    return _this;
+	  }
+
+	  (0, _createClass2["default"])(SocketClient, [{
+	    key: "connect",
+	    value: function connect(host) {
+	      this._socket = new WebSocket(host);
+	      this._socket.onopen = this._onConnected;
+	      this._socket.onmessage = this._onMessageFromServer;
+	    }
+	  }, {
+	    key: "sendCommand",
+	    value: function sendCommand(cmd, data) {
+	      return (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketClient.prototype), "sendCommand", this).call(this, cmd, data, this._socket);
+	    }
+	  }]);
+	  return SocketClient;
+	}(SocketBase);
+
+	module.exports = SocketClient;
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports) {
 
 	function _interopRequireDefault(obj) {
@@ -90,59 +166,7 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-	"use strict";
-
-/***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var _interopRequireDefault = __webpack_require__(2);
-
-	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(5));
-
-	var _createClass2 = _interopRequireDefault(__webpack_require__(6));
-
-	var _inherits2 = _interopRequireDefault(__webpack_require__(7));
-
-	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(9));
-
-	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(12));
-
-	var _Base = _interopRequireDefault(__webpack_require__(13));
-
-	function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
-
-	function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-	var SocketServer = /*#__PURE__*/function (_SocketBase) {
-	  (0, _inherits2["default"])(SocketServer, _SocketBase);
-
-	  var _super = _createSuper(SocketServer);
-
-	  function SocketServer() {
-	    (0, _classCallCheck2["default"])(this, SocketServer);
-	    return _super.call(this);
-	  }
-
-	  (0, _createClass2["default"])(SocketServer, [{
-	    key: "start",
-	    value: function start() {
-	      var port = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 8080;
-	      this._socket = new WebSocket.Server({
-	        port: port
-	      });
-	    }
-	  }]);
-	  return SocketServer;
-	}(_Base["default"]);
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports) {
 
 	function _classCallCheck(instance, Constructor) {
@@ -155,7 +179,7 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports) {
 
 	function _defineProperties(target, props) {
@@ -175,6 +199,21 @@ var IrrelonSockets =
 	}
 
 	module.exports = _createClass;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+	function _assertThisInitialized(self) {
+	  if (self === void 0) {
+	    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	  }
+
+	  return self;
+	}
+
+	module.exports = _assertThisInitialized;
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
@@ -224,7 +263,7 @@ var IrrelonSockets =
 
 	var _typeof = __webpack_require__(10)["default"];
 
-	var assertThisInitialized = __webpack_require__(11);
+	var assertThisInitialized = __webpack_require__(6);
 
 	function _possibleConstructorReturn(self, call) {
 	  if (call && (_typeof(call) === "object" || typeof call === "function")) {
@@ -266,21 +305,56 @@ var IrrelonSockets =
 
 /***/ }),
 /* 11 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	function _assertThisInitialized(self) {
-	  if (self === void 0) {
-	    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	var superPropBase = __webpack_require__(12);
+
+	function _get(target, property, receiver) {
+	  if (typeof Reflect !== "undefined" && Reflect.get) {
+	    module.exports = _get = Reflect.get;
+	    module.exports["default"] = module.exports, module.exports.__esModule = true;
+	  } else {
+	    module.exports = _get = function _get(target, property, receiver) {
+	      var base = superPropBase(target, property);
+	      if (!base) return;
+	      var desc = Object.getOwnPropertyDescriptor(base, property);
+
+	      if (desc.get) {
+	        return desc.get.call(receiver);
+	      }
+
+	      return desc.value;
+	    };
+
+	    module.exports["default"] = module.exports, module.exports.__esModule = true;
 	  }
 
-	  return self;
+	  return _get(target, property, receiver || target);
 	}
 
-	module.exports = _assertThisInitialized;
+	module.exports = _get;
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
 /* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var getPrototypeOf = __webpack_require__(13);
+
+	function _superPropBase(object, property) {
+	  while (!Object.prototype.hasOwnProperty.call(object, property)) {
+	    object = getPrototypeOf(object);
+	    if (object === null) break;
+	  }
+
+	  return object;
+	}
+
+	module.exports = _superPropBase;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports) {
 
 	function _getPrototypeOf(o) {
@@ -295,41 +369,29 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
+/* 14 */
+/***/ (function(module, exports) {
 
-	"use strict";
+	function _defineProperty(obj, key, value) {
+	  if (key in obj) {
+	    Object.defineProperty(obj, key, {
+	      value: value,
+	      enumerable: true,
+	      configurable: true,
+	      writable: true
+	    });
+	  } else {
+	    obj[key] = value;
+	  }
 
-	var _interopRequireDefault = __webpack_require__(2);
+	  return obj;
+	}
 
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports["default"] = exports.CONNECTED = exports.CONNECTING = exports.DISCONNECTED = void 0;
-
-	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(5));
-
-	var _isomorphicWs = _interopRequireDefault(__webpack_require__(14));
-
-	var _emitter = _interopRequireDefault(__webpack_require__(15));
-
-	var DISCONNECTED = 0;
-	exports.DISCONNECTED = DISCONNECTED;
-	var CONNECTING = 1;
-	exports.CONNECTING = CONNECTING;
-	var CONNECTED = 2;
-	exports.CONNECTED = CONNECTED;
-
-	var SocketBase = function SocketBase() {
-	  (0, _classCallCheck2["default"])(this, SocketBase);
-	};
-
-	(0, _emitter["default"])(SocketBase);
-	var _default = SocketBase;
-	exports["default"] = _default;
+	module.exports = _defineProperty;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {// https://github.com/maxogden/websocket-stream/blob/48dc3ddf943e5ada668c31ccd94e9186f02fafbd/ws-fallback.js
@@ -353,7 +415,140 @@ var IrrelonSockets =
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 15 */
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _interopRequireDefault = __webpack_require__(3);
+
+	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
+
+	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
+
+	var _defineProperty2 = _interopRequireDefault(__webpack_require__(14));
+
+	var Emitter = __webpack_require__(17);
+
+	var _require = __webpack_require__(19),
+	    COMMAND = _require.COMMAND;
+
+	var _require2 = __webpack_require__(19),
+	    CLIENT = _require2.CLIENT;
+
+	var _require3 = __webpack_require__(19),
+	    DISCONNECTED = _require3.DISCONNECTED;
+
+	var SocketBase = /*#__PURE__*/function () {
+	  function SocketBase(env) {
+	    var _this = this;
+
+	    (0, _classCallCheck2["default"])(this, SocketBase);
+	    (0, _defineProperty2["default"])(this, "_socketById", {});
+	    (0, _defineProperty2["default"])(this, "_commandMap", ["commandMap", "defineCommand"]);
+	    (0, _defineProperty2["default"])(this, "_idCounter", 0);
+	    (0, _defineProperty2["default"])(this, "_state", DISCONNECTED);
+	    (0, _defineProperty2["default"])(this, "state", function (newState) {
+	      if (newState === undefined) return _this._state;
+	      _this._state = newState;
+
+	      _this.emit("state", newState);
+	    });
+	    this._env = env;
+	  }
+
+	  (0, _createClass2["default"])(SocketBase, [{
+	    key: "log",
+	    value: function log() {
+	      var _console$log;
+
+	      (_console$log = console.log).apply.apply(_console$log, arguments);
+	    }
+	    /**
+	     * Generates a new 16-character hexadecimal unique ID
+	     * @return {String} The id.
+	     */
+
+	  }, {
+	    key: "hexId",
+	    value: function hexId() {
+	      this._idCounter++;
+	      return (this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	    }
+	  }, {
+	    key: "commandMap",
+	    value: function commandMap(_commandMap) {
+	      if (_commandMap === undefined) return this._commandMap;
+	      this._commandMap = _commandMap;
+	    }
+	  }, {
+	    key: "defineCommand",
+	    value: function defineCommand(command) {
+	      var existingCommandId = this.idByCommand(command);
+	      if (existingCommandId > -1) return existingCommandId; // Add the new command
+
+	      this._commandMap.push(command);
+
+	      if (this._env === CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
+
+	      this.sendCommand("defineCommand", this._commandMap.length - 1);
+	      return this._commandMap.length - 1;
+	    }
+	  }, {
+	    key: "commandById",
+	    value: function commandById(id) {
+	      return this._commandMap[id];
+	    }
+	  }, {
+	    key: "idByCommand",
+	    value: function idByCommand(command) {
+	      return this._commandMap.indexOf(command);
+	    }
+	  }, {
+	    key: "sendCommand",
+	    value: function sendCommand(cmd, data, socket) {
+	      if (!socket) return;
+	      var commandId = this.defineCommand(cmd);
+	      var message = [commandId, data];
+	      console.log("sendCommand", message);
+	      socket.send(JSON.stringify(message));
+	    }
+	  }, {
+	    key: "_onMessage",
+	    value: function _onMessage(rawMessage) {
+	      console.log("Raw message incoming", rawMessage);
+	      var message = JSON.parse(rawMessage.data);
+	      var commandId = message[0];
+	      var data = message[1];
+	      var command = this.commandById(commandId);
+	      console.log("Emitting", COMMAND, command, data);
+	      this.emitId(COMMAND, command, data);
+	      return {
+	        message: message,
+	        commandId: commandId,
+	        command: command,
+	        data: data
+	      };
+	    }
+	  }, {
+	    key: "_encode",
+	    value: function _encode(data) {
+	      return JSON.stringify(data);
+	    }
+	  }, {
+	    key: "_decode",
+	    value: function _decode(data) {
+	      return JSON.parse(data);
+	    }
+	  }]);
+	  return SocketBase;
+	}();
+
+	Emitter(SocketBase);
+	module.exports = SocketBase;
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -424,11 +619,11 @@ var IrrelonSockets =
 	 */
 	"use strict";
 
-	var _interopRequireDefault = __webpack_require__(2);
+	var _interopRequireDefault = __webpack_require__(3);
 
 	var _typeof2 = _interopRequireDefault(__webpack_require__(10));
 
-	var Overload = __webpack_require__(16);
+	var Overload = __webpack_require__(18);
 
 	var EventMethods = {
 	  on: new Overload({
@@ -1211,7 +1406,7 @@ var IrrelonSockets =
 	module.exports = Emitter;
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -1373,6 +1568,151 @@ var IrrelonSockets =
 	};
 
 	module.exports = Overload;
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	var DISCONNECTED = 0;
+	var CONNECTING = 1;
+	var CONNECTED = 2;
+	var STARTED = 3;
+	var STOPPED = 4;
+	var CLIENT = 5;
+	var SERVER = 6;
+	var COMMAND = "command";
+	module.exports = {
+	  DISCONNECTED: DISCONNECTED,
+	  CONNECTING: CONNECTING,
+	  CONNECTED: CONNECTED,
+	  STARTED: STARTED,
+	  STOPPED: STOPPED,
+	  CLIENT: CLIENT,
+	  SERVER: SERVER,
+	  COMMAND: COMMAND
+	};
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _interopRequireDefault = __webpack_require__(3);
+
+	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
+
+	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
+
+	var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(6));
+
+	var _get2 = _interopRequireDefault(__webpack_require__(11));
+
+	var _inherits2 = _interopRequireDefault(__webpack_require__(7));
+
+	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(9));
+
+	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(13));
+
+	var _defineProperty2 = _interopRequireDefault(__webpack_require__(14));
+
+	function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
+
+	function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+	var WebSocket = __webpack_require__(15);
+
+	var SocketBase = __webpack_require__(16);
+
+	var _require = __webpack_require__(19),
+	    COMMAND = _require.COMMAND;
+
+	var _require2 = __webpack_require__(19),
+	    SERVER = _require2.SERVER,
+	    STARTED = _require2.STARTED,
+	    STOPPED = _require2.STOPPED;
+
+	var SocketServer = /*#__PURE__*/function (_SocketBase) {
+	  (0, _inherits2["default"])(SocketServer, _SocketBase);
+
+	  var _super = _createSuper(SocketServer);
+
+	  function SocketServer() {
+	    var _this;
+
+	    (0, _classCallCheck2["default"])(this, SocketServer);
+	    _this = _super.call(this, SERVER);
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onClientConnect", function (socket) {
+	      socket.id = _this.hexId();
+	      _this._socketById[socket.id] = socket;
+	      socket.on("message", function (data) {
+	        _this._onMessageFromClient(socket, data);
+	      });
+	      socket.on("disconnect", function (data) {
+	        _this._onClientDisconnect(socket, data);
+	      }); // Send initial data to the client
+
+	      _this.sendCommand("commandMap", _this._commandMap, socket.id);
+
+	      _this.emit("clientConnect", socket.id);
+	    });
+	    return _this;
+	  }
+
+	  (0, _createClass2["default"])(SocketServer, [{
+	    key: "start",
+	    value: function start() {
+	      var port = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 8080;
+
+	      if (this.state() === STARTED) {
+	        this.log("Call to start() - already started!");
+	        return;
+	      }
+
+	      this._socket = new WebSocket.Server({
+	        port: port
+	      });
+
+	      this._socket.on("connection", this._onClientConnect);
+
+	      this.emit("started", {
+	        port: port
+	      });
+	      this.state(STARTED);
+	    }
+	  }, {
+	    key: "stop",
+	    value: function stop() {
+	      this._socket.close();
+
+	      this.emit("stopped");
+	      this.state(STOPPED);
+	    }
+	  }, {
+	    key: "sendCommand",
+	    value: function sendCommand(cmd, data, socketId) {
+	      var socket = this._socketById[socketId];
+	      if (!socket) return;
+	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "sendCommand", this).call(this, cmd, data, socket);
+	    }
+	  }, {
+	    key: "_onClientDisconnect",
+	    value: function _onClientDisconnect(socket, data) {
+	      this.emitId("clientDisconnect", socket.id, data);
+	      delete this._socketById[socket.id];
+	    }
+	  }, {
+	    key: "_onMessageFromClient",
+	    value: function _onMessageFromClient(socket, rawMessage) {
+	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "_onMessage", this).call(this, rawMessage);
+	    }
+	  }]);
+	  return SocketServer;
+	}(SocketBase);
+
+	module.exports = SocketServer;
 
 /***/ })
 /******/ ]);

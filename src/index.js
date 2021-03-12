@@ -1,2 +1,7 @@
-export Client from "./Client"
-export Server from "./Server"
+const Client = require("./Client");
+const Server = require("./Server");
+
+module.exports = {
+	Client,
+	Server
+};
