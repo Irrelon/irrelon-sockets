@@ -98,6 +98,7 @@ class SocketBase {
 
 		this._state = newState;
 		this.emit(EVT_STATE_CHANGE, newState);
+		return this;
 	}
 
 	log (...args) {
