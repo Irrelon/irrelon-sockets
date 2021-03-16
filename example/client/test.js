@@ -1,4 +1,5 @@
-const client = new IrrelonSockets.Client();
+const {Client, EVT_CONNECTED, EVT_READY, CMD_REQUEST, CMD_MESSAGE} = IrrelonSockets;
+const client = new Client();
 
 client.on(EVT_CONNECTED, () => {
 	console.log("connected");
@@ -25,7 +26,7 @@ client.GET("/test").then((response) => {
 });
 
 client.send({"foo": true});
-client.on(EVT_MESSAGE, (data) => {
+client.on(CMD_MESSAGE, (data) => {
 	console.log("Message", data);
 });
 

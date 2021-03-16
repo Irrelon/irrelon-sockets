@@ -54,83 +54,101 @@ var IrrelonSockets =
 
 	"use strict";
 
-	var _interopRequireDefault = __webpack_require__(2);
-
-	var _defineProperty2 = _interopRequireDefault(__webpack_require__(3));
-
-	function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-	function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-	var Client = __webpack_require__(4);
+	var Client = __webpack_require__(2);
 
 	var Server = __webpack_require__(28);
 
-	var enums = __webpack_require__(26);
+	var _require = __webpack_require__(26),
+	    STA_DISCONNECTED = _require.STA_DISCONNECTED,
+	    STA_CONNECTING = _require.STA_CONNECTING,
+	    STA_CONNECTED = _require.STA_CONNECTED,
+	    STA_READY = _require.STA_READY,
+	    STA_STARTED = _require.STA_STARTED,
+	    STA_STOPPED = _require.STA_STOPPED,
+	    ENV_CLIENT = _require.ENV_CLIENT,
+	    ENV_SERVER = _require.ENV_SERVER,
+	    CMD_COMMAND_MAP = _require.CMD_COMMAND_MAP,
+	    CMD_DEFINE_COMMAND = _require.CMD_DEFINE_COMMAND,
+	    CMD_MESSAGE = _require.CMD_MESSAGE,
+	    CMD_PING = _require.CMD_PING,
+	    CMD_READY = _require.CMD_READY,
+	    CMD_REQUEST = _require.CMD_REQUEST,
+	    CMD_RESPONSE = _require.CMD_RESPONSE,
+	    EVT_COMMAND = _require.EVT_COMMAND,
+	    EVT_CONNECTED = _require.EVT_CONNECTED,
+	    EVT_CONNECTING = _require.EVT_CONNECTING,
+	    EVT_DISCONNECTED = _require.EVT_DISCONNECTED,
+	    EVT_MESSAGE = _require.EVT_MESSAGE,
+	    EVT_READY = _require.EVT_READY,
+	    EVT_RECONNECTING = _require.EVT_RECONNECTING,
+	    EVT_STATE_CHANGE = _require.EVT_STATE_CHANGE,
+	    EVT_ERROR = _require.EVT_ERROR,
+	    EVT_STARTED = _require.EVT_STARTED,
+	    EVT_STOPPED = _require.EVT_STOPPED,
+	    EVT_CLIENT_CONNECTED = _require.EVT_CLIENT_CONNECTED,
+	    EVT_CLIENT_DISCONNECTED = _require.EVT_CLIENT_DISCONNECTED;
 
-	module.exports = _objectSpread({
+	module.exports = {
+	  // Classes
 	  Client: Client,
-	  Server: Server
-	}, enums);
+	  Server: Server,
+	  // States
+	  STA_DISCONNECTED: STA_DISCONNECTED,
+	  STA_CONNECTING: STA_CONNECTING,
+	  STA_CONNECTED: STA_CONNECTED,
+	  STA_READY: STA_READY,
+	  STA_STARTED: STA_STARTED,
+	  STA_STOPPED: STA_STOPPED,
+	  // Environments
+	  ENV_CLIENT: ENV_CLIENT,
+	  ENV_SERVER: ENV_SERVER,
+	  // Commands
+	  CMD_COMMAND_MAP: CMD_COMMAND_MAP,
+	  CMD_DEFINE_COMMAND: CMD_DEFINE_COMMAND,
+	  CMD_MESSAGE: CMD_MESSAGE,
+	  CMD_PING: CMD_PING,
+	  CMD_READY: CMD_READY,
+	  CMD_REQUEST: CMD_REQUEST,
+	  CMD_RESPONSE: CMD_RESPONSE,
+	  // Events
+	  EVT_COMMAND: EVT_COMMAND,
+	  EVT_CONNECTED: EVT_CONNECTED,
+	  EVT_CONNECTING: EVT_CONNECTING,
+	  EVT_DISCONNECTED: EVT_DISCONNECTED,
+	  EVT_MESSAGE: EVT_MESSAGE,
+	  EVT_READY: EVT_READY,
+	  EVT_RECONNECTING: EVT_RECONNECTING,
+	  EVT_STATE_CHANGE: EVT_STATE_CHANGE,
+	  EVT_ERROR: EVT_ERROR,
+	  EVT_STARTED: EVT_STARTED,
+	  EVT_STOPPED: EVT_STOPPED,
+	  EVT_CLIENT_CONNECTED: EVT_CLIENT_CONNECTED,
+	  EVT_CLIENT_DISCONNECTED: EVT_CLIENT_DISCONNECTED
+	};
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports) {
-
-	function _interopRequireDefault(obj) {
-	  return obj && obj.__esModule ? obj : {
-	    "default": obj
-	  };
-	}
-
-	module.exports = _interopRequireDefault;
-	module.exports["default"] = module.exports, module.exports.__esModule = true;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-	function _defineProperty(obj, key, value) {
-	  if (key in obj) {
-	    Object.defineProperty(obj, key, {
-	      value: value,
-	      enumerable: true,
-	      configurable: true,
-	      writable: true
-	    });
-	  } else {
-	    obj[key] = value;
-	  }
-
-	  return obj;
-	}
-
-	module.exports = _defineProperty;
-	module.exports["default"] = module.exports, module.exports.__esModule = true;
-
-/***/ }),
-/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _interopRequireDefault = __webpack_require__(2);
+	var _interopRequireDefault = __webpack_require__(3);
 
-	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(5));
+	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
 
-	var _createClass2 = _interopRequireDefault(__webpack_require__(6));
+	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
 
-	var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(7));
+	var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(6));
 
-	var _inherits2 = _interopRequireDefault(__webpack_require__(8));
+	var _inherits2 = _interopRequireDefault(__webpack_require__(7));
 
-	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(10));
+	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(9));
 
-	var _get2 = _interopRequireDefault(__webpack_require__(12));
+	var _get2 = _interopRequireDefault(__webpack_require__(11));
 
-	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(14));
+	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(13));
 
-	var _defineProperty2 = _interopRequireDefault(__webpack_require__(3));
+	var _defineProperty2 = _interopRequireDefault(__webpack_require__(14));
 
 	function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
@@ -144,12 +162,34 @@ var IrrelonSockets =
 	    hexId = _require.hexId;
 
 	var _require2 = __webpack_require__(26),
-	    READY = _require2.READY,
-	    CONNECTING = _require2.CONNECTING,
-	    CONNECTED = _require2.CONNECTED,
-	    DISCONNECTED = _require2.DISCONNECTED,
-	    CLIENT = _require2.CLIENT,
-	    COMMAND = _require2.COMMAND;
+	    STA_DISCONNECTED = _require2.STA_DISCONNECTED,
+	    STA_CONNECTING = _require2.STA_CONNECTING,
+	    STA_CONNECTED = _require2.STA_CONNECTED,
+	    STA_READY = _require2.STA_READY,
+	    STA_STARTED = _require2.STA_STARTED,
+	    STA_STOPPED = _require2.STA_STOPPED,
+	    ENV_CLIENT = _require2.ENV_CLIENT,
+	    ENV_SERVER = _require2.ENV_SERVER,
+	    CMD_COMMAND_MAP = _require2.CMD_COMMAND_MAP,
+	    CMD_DEFINE_COMMAND = _require2.CMD_DEFINE_COMMAND,
+	    CMD_MESSAGE = _require2.CMD_MESSAGE,
+	    CMD_PING = _require2.CMD_PING,
+	    CMD_READY = _require2.CMD_READY,
+	    CMD_REQUEST = _require2.CMD_REQUEST,
+	    CMD_RESPONSE = _require2.CMD_RESPONSE,
+	    EVT_COMMAND = _require2.EVT_COMMAND,
+	    EVT_CONNECTED = _require2.EVT_CONNECTED,
+	    EVT_CONNECTING = _require2.EVT_CONNECTING,
+	    EVT_DISCONNECTED = _require2.EVT_DISCONNECTED,
+	    EVT_MESSAGE = _require2.EVT_MESSAGE,
+	    EVT_READY = _require2.EVT_READY,
+	    EVT_RECONNECTING = _require2.EVT_RECONNECTING,
+	    EVT_STATE_CHANGE = _require2.EVT_STATE_CHANGE,
+	    EVT_ERROR = _require2.EVT_ERROR,
+	    EVT_STARTED = _require2.EVT_STARTED,
+	    EVT_STOPPED = _require2.EVT_STOPPED,
+	    EVT_CLIENT_CONNECTED = _require2.EVT_CLIENT_CONNECTED,
+	    EVT_CLIENT_DISCONNECTED = _require2.EVT_CLIENT_DISCONNECTED;
 
 	var SocketClient = /*#__PURE__*/function (_SocketBase) {
 	  (0, _inherits2["default"])(SocketClient, _SocketBase);
@@ -161,19 +201,19 @@ var IrrelonSockets =
 
 	    var clientName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "Client";
 	    (0, _classCallCheck2["default"])(this, SocketClient);
-	    _this = _super.call(this, CLIENT, clientName); // Define the default command listeners
+	    _this = _super.call(this, ENV_CLIENT, clientName); // Define the default command listeners
 
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_backoff", 1000);
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_buffer", []);
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onConnected", function () {
 	      _this._backoff = 1000;
 
-	      _this.state(CONNECTED);
+	      _this.state(STA_CONNECTED);
 
 	      _this.emit(EVT_CONNECTED);
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onUnexpectedDisconnect", function () {
-	      _this.state(DISCONNECTED);
+	      _this.state(STA_DISCONNECTED);
 
 	      _this.log("Disconnected from server");
 
@@ -204,18 +244,18 @@ var IrrelonSockets =
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onReadyCommand", function (data) {
 	      _this.log("_onReadyCommand", data);
 
-	      _this.state(READY);
+	      _this.state(STA_READY);
 
 	      _this.emit(CMD_READY);
 
 	      _this.processBuffer();
 	    });
 
-	    _this.on(COMMAND, CMD_COMMAND_MAP, _this._onCommandMap);
+	    _this.on(EVT_COMMAND, CMD_COMMAND_MAP, _this._onCommandMap);
 
-	    _this.on(COMMAND, CMD_DEFINE_COMMAND, _this._onDefineCommand);
+	    _this.on(EVT_COMMAND, CMD_DEFINE_COMMAND, _this._onDefineCommand);
 
-	    _this.on(COMMAND, CMD_READY, _this._onReadyCommand);
+	    _this.on(EVT_COMMAND, CMD_READY, _this._onReadyCommand);
 
 	    return _this;
 	  }
@@ -224,11 +264,11 @@ var IrrelonSockets =
 	    key: "connect",
 	    value: function connect(host) {
 	      // Check if we are already connected
-	      if (this.state() === CONNECTED) {
+	      if (this.state() === STA_CONNECTED) {
 	        return;
 	      }
 
-	      this.state(CONNECTING);
+	      this.state(STA_CONNECTING);
 	      this._host = host;
 	      this._socket = new WebSocket(host);
 	      this._socket.onopen = this._onConnected;
@@ -252,7 +292,7 @@ var IrrelonSockets =
 	  }, {
 	    key: "disconnect",
 	    value: function disconnect() {
-	      this.state(DISCONNECTED);
+	      this.state(STA_DISCONNECTED);
 
 	      try {
 	        this._socket.terminate();
@@ -265,7 +305,7 @@ var IrrelonSockets =
 	  }, {
 	    key: "sendCommand",
 	    value: function sendCommand(cmd, data) {
-	      if (this.state() !== READY) {
+	      if (this.state() !== STA_READY) {
 	        // Buffer the message and send when connected
 	        this._buffer.push({
 	          "type": "sendCommand",
@@ -305,7 +345,7 @@ var IrrelonSockets =
 	  }, {
 	    key: "sendRequest",
 	    value: function sendRequest(requestName, data, callback) {
-	      if (this.state() !== READY) {
+	      if (this.state() !== STA_READY) {
 	        // Buffer the message and send when connected
 	        this._buffer.push({
 	          "type": "sendRequest",
@@ -388,7 +428,7 @@ var IrrelonSockets =
 	  }, {
 	    key: "send",
 	    value: function send(data) {
-	      this.sendCommand("genericMessage", data);
+	      this.sendCommand(CMD_MESSAGE, data);
 	    }
 	  }, {
 	    key: "_onRequest",
@@ -409,7 +449,20 @@ var IrrelonSockets =
 	module.exports = SocketClient;
 
 /***/ }),
-/* 5 */
+/* 3 */
+/***/ (function(module, exports) {
+
+	function _interopRequireDefault(obj) {
+	  return obj && obj.__esModule ? obj : {
+	    "default": obj
+	  };
+	}
+
+	module.exports = _interopRequireDefault;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports) {
 
 	function _classCallCheck(instance, Constructor) {
@@ -422,7 +475,7 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports) {
 
 	function _defineProperties(target, props) {
@@ -445,7 +498,7 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports) {
 
 	function _assertThisInitialized(self) {
@@ -460,10 +513,10 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var setPrototypeOf = __webpack_require__(9);
+	var setPrototypeOf = __webpack_require__(8);
 
 	function _inherits(subClass, superClass) {
 	  if (typeof superClass !== "function" && superClass !== null) {
@@ -484,7 +537,7 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports) {
 
 	function _setPrototypeOf(o, p) {
@@ -501,12 +554,12 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var _typeof = __webpack_require__(11)["default"];
+	var _typeof = __webpack_require__(10)["default"];
 
-	var assertThisInitialized = __webpack_require__(7);
+	var assertThisInitialized = __webpack_require__(6);
 
 	function _possibleConstructorReturn(self, call) {
 	  if (call && (_typeof(call) === "object" || typeof call === "function")) {
@@ -520,7 +573,7 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports) {
 
 	function _typeof(obj) {
@@ -547,10 +600,10 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var superPropBase = __webpack_require__(13);
+	var superPropBase = __webpack_require__(12);
 
 	function _get(target, property, receiver) {
 	  if (typeof Reflect !== "undefined" && Reflect.get) {
@@ -579,10 +632,10 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var getPrototypeOf = __webpack_require__(14);
+	var getPrototypeOf = __webpack_require__(13);
 
 	function _superPropBase(object, property) {
 	  while (!Object.prototype.hasOwnProperty.call(object, property)) {
@@ -597,7 +650,7 @@ var IrrelonSockets =
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports) {
 
 	function _getPrototypeOf(o) {
@@ -609,6 +662,28 @@ var IrrelonSockets =
 	}
 
 	module.exports = _getPrototypeOf;
+	module.exports["default"] = module.exports, module.exports.__esModule = true;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports) {
+
+	function _defineProperty(obj, key, value) {
+	  if (key in obj) {
+	    Object.defineProperty(obj, key, {
+	      value: value,
+	      enumerable: true,
+	      configurable: true,
+	      writable: true
+	    });
+	  } else {
+	    obj[key] = value;
+	  }
+
+	  return obj;
+	}
+
+	module.exports = _defineProperty;
 	module.exports["default"] = module.exports, module.exports.__esModule = true;
 
 /***/ }),
@@ -641,47 +716,67 @@ var IrrelonSockets =
 
 	"use strict";
 
-	var _interopRequireDefault = __webpack_require__(2);
+	var _interopRequireDefault = __webpack_require__(3);
 
 	var _slicedToArray2 = _interopRequireDefault(__webpack_require__(17));
 
-	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(5));
+	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
 
-	var _createClass2 = _interopRequireDefault(__webpack_require__(6));
+	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
 
-	var _defineProperty2 = _interopRequireDefault(__webpack_require__(3));
+	var _defineProperty3 = _interopRequireDefault(__webpack_require__(14));
 
 	var Emitter = __webpack_require__(23);
 
 	var encoders = __webpack_require__(25);
 
 	var _require = __webpack_require__(26),
-	    COMMAND = _require.COMMAND,
-	    CLIENT = _require.CLIENT,
-	    DISCONNECTED = _require.DISCONNECTED;
+	    STA_DISCONNECTED = _require.STA_DISCONNECTED,
+	    STA_CONNECTING = _require.STA_CONNECTING,
+	    STA_CONNECTED = _require.STA_CONNECTED,
+	    STA_READY = _require.STA_READY,
+	    STA_STARTED = _require.STA_STARTED,
+	    STA_STOPPED = _require.STA_STOPPED,
+	    ENV_CLIENT = _require.ENV_CLIENT,
+	    ENV_SERVER = _require.ENV_SERVER,
+	    CMD_COMMAND_MAP = _require.CMD_COMMAND_MAP,
+	    CMD_DEFINE_COMMAND = _require.CMD_DEFINE_COMMAND,
+	    CMD_MESSAGE = _require.CMD_MESSAGE,
+	    CMD_PING = _require.CMD_PING,
+	    CMD_READY = _require.CMD_READY,
+	    CMD_REQUEST = _require.CMD_REQUEST,
+	    CMD_RESPONSE = _require.CMD_RESPONSE,
+	    EVT_COMMAND = _require.EVT_COMMAND,
+	    EVT_CONNECTED = _require.EVT_CONNECTED,
+	    EVT_CONNECTING = _require.EVT_CONNECTING,
+	    EVT_DISCONNECTED = _require.EVT_DISCONNECTED,
+	    EVT_MESSAGE = _require.EVT_MESSAGE,
+	    EVT_READY = _require.EVT_READY,
+	    EVT_RECONNECTING = _require.EVT_RECONNECTING,
+	    EVT_STATE_CHANGE = _require.EVT_STATE_CHANGE,
+	    EVT_ERROR = _require.EVT_ERROR,
+	    EVT_STARTED = _require.EVT_STARTED,
+	    EVT_STOPPED = _require.EVT_STOPPED,
+	    EVT_CLIENT_CONNECTED = _require.EVT_CLIENT_CONNECTED,
+	    EVT_CLIENT_DISCONNECTED = _require.EVT_CLIENT_DISCONNECTED;
 
 	var SocketBase = /*#__PURE__*/function () {
 	  function SocketBase(env, name) {
-	    var _this = this;
+	    var _defineProperty2,
+	        _this = this;
 
 	    (0, _classCallCheck2["default"])(this, SocketBase);
-	    (0, _defineProperty2["default"])(this, "_socketById", {});
-	    (0, _defineProperty2["default"])(this, "_requestById", {});
-	    (0, _defineProperty2["default"])(this, "_responseCallbackByRequestId", {});
-	    (0, _defineProperty2["default"])(this, "_dictionary", []);
-	    (0, _defineProperty2["default"])(this, "_commandMap", [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE]);
-	    (0, _defineProperty2["default"])(this, "_commandEncoding", {
-	      "*": encoders.jsonEncoder,
-	      "CMD_COMMAND_MAP": encoders.stringArrayEncoder,
-	      "CMD_DEFINE_COMMAND": encoders.stringArrayEncoder,
-	      "CMD_READY": encoders.noDataEncoder,
-	      "CMD_REQUEST": encoders.jsonEncoder,
-	      "CMD_RESPONSE": encoders.jsonEncoder,
-	      "CMD_MESSAGE": encoders.jsonEncoder
-	    });
-	    (0, _defineProperty2["default"])(this, "_idCounter", 0);
-	    (0, _defineProperty2["default"])(this, "_state", DISCONNECTED);
-	    (0, _defineProperty2["default"])(this, "state", function (newState) {
+	    (0, _defineProperty3["default"])(this, "_socketById", {});
+	    (0, _defineProperty3["default"])(this, "_requestById", {});
+	    (0, _defineProperty3["default"])(this, "_responseCallbackByRequestId", {});
+	    (0, _defineProperty3["default"])(this, "_dictionary", []);
+	    (0, _defineProperty3["default"])(this, "_commandMap", [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE]);
+	    (0, _defineProperty3["default"])(this, "_commandEncoding", (_defineProperty2 = {
+	      "*": encoders.jsonEncoder
+	    }, (0, _defineProperty3["default"])(_defineProperty2, CMD_COMMAND_MAP, encoders.stringArrayEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_DEFINE_COMMAND, encoders.stringArrayEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_READY, encoders.noDataEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_REQUEST, encoders.jsonEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_RESPONSE, encoders.jsonEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_MESSAGE, encoders.jsonEncoder), _defineProperty2));
+	    (0, _defineProperty3["default"])(this, "_idCounter", 0);
+	    (0, _defineProperty3["default"])(this, "_state", STA_DISCONNECTED);
+	    (0, _defineProperty3["default"])(this, "state", function (newState) {
 	      if (newState === undefined) return _this._state;
 	      _this._state = newState;
 
@@ -757,7 +852,7 @@ var IrrelonSockets =
 
 	      this._commandEncoding[command] = encoder;
 	      this.log("Defined new command \"".concat(command, "\""));
-	      if (this._env === CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
+	      if (this._env === ENV_CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
 
 	      this.sendCommand(CMD_DEFINE_COMMAND, [command, encoderName || this.encoderNameByObject(encoder)]);
 	      return this._commandMap.length - 1;
@@ -848,7 +943,7 @@ var IrrelonSockets =
 	      } else if (command === CMD_MESSAGE) {
 	        this.emit(EVT_MESSAGE, data);
 	      } else {
-	        this.emitId(COMMAND, command, data);
+	        this.emitId(EVT_COMMAND, command, data);
 	      }
 
 	      return {
@@ -1083,9 +1178,9 @@ var IrrelonSockets =
 	 */
 	"use strict";
 
-	var _interopRequireDefault = __webpack_require__(2);
+	var _interopRequireDefault = __webpack_require__(3);
 
-	var _typeof2 = _interopRequireDefault(__webpack_require__(11));
+	var _typeof2 = _interopRequireDefault(__webpack_require__(10));
 
 	var Overload = __webpack_require__(24);
 
@@ -2089,15 +2184,14 @@ var IrrelonSockets =
 
 	"use strict";
 
-	var DISCONNECTED = 0;
-	var CONNECTING = 1;
-	var CONNECTED = 2;
-	var READY = 3;
-	var STARTED = 4;
-	var STOPPED = 5;
-	var CLIENT = 6;
-	var SERVER = 7;
-	var COMMAND = "command";
+	var STA_DISCONNECTED = 0;
+	var STA_CONNECTING = 1;
+	var STA_CONNECTED = 2;
+	var STA_READY = 3;
+	var STA_STARTED = 4;
+	var STA_STOPPED = 5;
+	var ENV_CLIENT = 1;
+	var ENV_SERVER = 2;
 	var CMD_PING = "ping";
 	var CMD_COMMAND_MAP = "commandMap";
 	var CMD_DEFINE_COMMAND = "defineCommand";
@@ -2105,6 +2199,7 @@ var IrrelonSockets =
 	var CMD_REQUEST = "request";
 	var CMD_RESPONSE = "response";
 	var CMD_MESSAGE = "message";
+	var EVT_COMMAND = "command";
 	var EVT_READY = "ready";
 	var EVT_MESSAGE = "message";
 	var EVT_CONNECTED = "connected";
@@ -2119,15 +2214,15 @@ var IrrelonSockets =
 	var EVT_CLIENT_DISCONNECTED = "clientDisconnected";
 	module.exports = {
 	  // States
-	  DISCONNECTED: DISCONNECTED,
-	  CONNECTING: CONNECTING,
-	  CONNECTED: CONNECTED,
-	  READY: READY,
-	  STARTED: STARTED,
-	  STOPPED: STOPPED,
-	  CLIENT: CLIENT,
-	  SERVER: SERVER,
-	  COMMAND: COMMAND,
+	  STA_DISCONNECTED: STA_DISCONNECTED,
+	  STA_CONNECTING: STA_CONNECTING,
+	  STA_CONNECTED: STA_CONNECTED,
+	  STA_READY: STA_READY,
+	  STA_STARTED: STA_STARTED,
+	  STA_STOPPED: STA_STOPPED,
+	  // Environments
+	  ENV_CLIENT: ENV_CLIENT,
+	  ENV_SERVER: ENV_SERVER,
 	  // Commands
 	  CMD_COMMAND_MAP: CMD_COMMAND_MAP,
 	  CMD_DEFINE_COMMAND: CMD_DEFINE_COMMAND,
@@ -2137,6 +2232,7 @@ var IrrelonSockets =
 	  CMD_REQUEST: CMD_REQUEST,
 	  CMD_RESPONSE: CMD_RESPONSE,
 	  // Events
+	  EVT_COMMAND: EVT_COMMAND,
 	  EVT_CONNECTED: EVT_CONNECTED,
 	  EVT_CONNECTING: EVT_CONNECTING,
 	  EVT_DISCONNECTED: EVT_DISCONNECTED,
@@ -2178,25 +2274,25 @@ var IrrelonSockets =
 
 	"use strict";
 
-	var _interopRequireDefault = __webpack_require__(2);
+	var _interopRequireDefault = __webpack_require__(3);
 
 	var _slicedToArray2 = _interopRequireDefault(__webpack_require__(17));
 
-	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(5));
+	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
 
-	var _createClass2 = _interopRequireDefault(__webpack_require__(6));
+	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
 
-	var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(7));
+	var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(6));
 
-	var _get2 = _interopRequireDefault(__webpack_require__(12));
+	var _get2 = _interopRequireDefault(__webpack_require__(11));
 
-	var _inherits2 = _interopRequireDefault(__webpack_require__(8));
+	var _inherits2 = _interopRequireDefault(__webpack_require__(7));
 
-	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(10));
+	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(9));
 
-	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(14));
+	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(13));
 
-	var _defineProperty2 = _interopRequireDefault(__webpack_require__(3));
+	var _defineProperty2 = _interopRequireDefault(__webpack_require__(14));
 
 	function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
@@ -2210,9 +2306,34 @@ var IrrelonSockets =
 	    hexId = _require.hexId;
 
 	var _require2 = __webpack_require__(26),
-	    SERVER = _require2.SERVER,
-	    STARTED = _require2.STARTED,
-	    STOPPED = _require2.STOPPED;
+	    STA_DISCONNECTED = _require2.STA_DISCONNECTED,
+	    STA_CONNECTING = _require2.STA_CONNECTING,
+	    STA_CONNECTED = _require2.STA_CONNECTED,
+	    STA_READY = _require2.STA_READY,
+	    STA_STARTED = _require2.STA_STARTED,
+	    STA_STOPPED = _require2.STA_STOPPED,
+	    ENV_CLIENT = _require2.ENV_CLIENT,
+	    ENV_SERVER = _require2.ENV_SERVER,
+	    CMD_COMMAND_MAP = _require2.CMD_COMMAND_MAP,
+	    CMD_DEFINE_COMMAND = _require2.CMD_DEFINE_COMMAND,
+	    CMD_MESSAGE = _require2.CMD_MESSAGE,
+	    CMD_PING = _require2.CMD_PING,
+	    CMD_READY = _require2.CMD_READY,
+	    CMD_REQUEST = _require2.CMD_REQUEST,
+	    CMD_RESPONSE = _require2.CMD_RESPONSE,
+	    EVT_COMMAND = _require2.EVT_COMMAND,
+	    EVT_CONNECTED = _require2.EVT_CONNECTED,
+	    EVT_CONNECTING = _require2.EVT_CONNECTING,
+	    EVT_DISCONNECTED = _require2.EVT_DISCONNECTED,
+	    EVT_MESSAGE = _require2.EVT_MESSAGE,
+	    EVT_READY = _require2.EVT_READY,
+	    EVT_RECONNECTING = _require2.EVT_RECONNECTING,
+	    EVT_STATE_CHANGE = _require2.EVT_STATE_CHANGE,
+	    EVT_ERROR = _require2.EVT_ERROR,
+	    EVT_STARTED = _require2.EVT_STARTED,
+	    EVT_STOPPED = _require2.EVT_STOPPED,
+	    EVT_CLIENT_CONNECTED = _require2.EVT_CLIENT_CONNECTED,
+	    EVT_CLIENT_DISCONNECTED = _require2.EVT_CLIENT_DISCONNECTED;
 
 	var SocketServer = /*#__PURE__*/function (_SocketBase) {
 	  (0, _inherits2["default"])(SocketServer, _SocketBase);
@@ -2224,7 +2345,7 @@ var IrrelonSockets =
 
 	    var serverName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "Server";
 	    (0, _classCallCheck2["default"])(this, SocketServer);
-	    _this = _super.call(this, SERVER, serverName);
+	    _this = _super.call(this, ENV_SERVER, serverName);
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_httpMethodHandlers", {});
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onClientConnect", function (socket) {
 	      socket.id = hexId();
@@ -2243,7 +2364,7 @@ var IrrelonSockets =
 
 	      _this.sendCommand(CMD_READY, "", socket.id);
 
-	      _this.emit(EVT_CLIENT_CONNECT, socket.id);
+	      _this.emit(EVT_CLIENT_CONNECTED, socket.id);
 	    });
 
 	    _this.on(CMD_REQUEST, "GET", function (_ref) {
@@ -2310,7 +2431,7 @@ var IrrelonSockets =
 	    value: function start() {
 	      var port = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 8080;
 
-	      if (this.state() === STARTED) {
+	      if (this.state() === STA_STARTED) {
 	        this.log("Call to start() - already started!");
 	        return;
 	      }
@@ -2325,7 +2446,7 @@ var IrrelonSockets =
 	      this.emit(EVT_STARTED, {
 	        port: port
 	      });
-	      this.state(STARTED);
+	      this.state(STA_STARTED);
 	    }
 	  }, {
 	    key: "stop",
@@ -2333,7 +2454,7 @@ var IrrelonSockets =
 	      this._socket.close();
 
 	      this.emit(EVT_STOPPED);
-	      this.state(STOPPED);
+	      this.state(STA_STOPPED);
 	    }
 	  }, {
 	    key: "broadcastCommand",
@@ -2405,12 +2526,12 @@ var IrrelonSockets =
 	  }, {
 	    key: "send",
 	    value: function send(data, socketId) {
-	      this.sendCommand("genericMessage", data, socketId);
+	      this.sendCommand(CMD_MESSAGE, data, socketId);
 	    }
 	  }, {
 	    key: "_onClientDisconnect",
 	    value: function _onClientDisconnect(data, socket) {
-	      this.emitId(EVT_CLIENT_DISCONNECT, socket.id, data);
+	      this.emitId(EVT_CLIENT_DISCONNECTED, socket.id, data);
 	      delete this._socketById[socket.id];
 	    }
 	  }, {

@@ -1,4 +1,11 @@
-const {Server} = require("../../src/index");
+const {
+	Server,
+	EVT_STARTED,
+	EVT_STOPPED,
+	EVT_CLIENT_CONNECTED,
+	CMD_REQUEST,
+	CMD_MESSAGE
+} = require("../../src/index");
 
 const server = new Server();
 
@@ -33,7 +40,7 @@ server.GET("/test", (req, res) => {
 	res.send({"GET RESPONSE": true});
 });
 
-server.on(EVT_MESSAGE, (data) => {
+server.on(CMD_MESSAGE, (data) => {
 	console.log("Message", data);
 });
 

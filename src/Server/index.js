@@ -1,13 +1,49 @@
 const WebSocket = require("isomorphic-ws");
 const SocketBase = require("../Base");
 const {hexId} = require("../Base/utils");
-const {SERVER, STARTED, STOPPED} = require("../Base/enums");
+const {
+	// States
+	STA_DISCONNECTED,
+	STA_CONNECTING,
+	STA_CONNECTED,
+	STA_READY,
+	STA_STARTED,
+	STA_STOPPED,
+
+	// Environments
+	ENV_CLIENT,
+	ENV_SERVER,
+
+	// Commands
+	CMD_COMMAND_MAP,
+	CMD_DEFINE_COMMAND,
+	CMD_MESSAGE,
+	CMD_PING,
+	CMD_READY,
+	CMD_REQUEST,
+	CMD_RESPONSE,
+
+	// Events
+	EVT_COMMAND,
+	EVT_CONNECTED,
+	EVT_CONNECTING,
+	EVT_DISCONNECTED,
+	EVT_MESSAGE,
+	EVT_READY,
+	EVT_RECONNECTING,
+	EVT_STATE_CHANGE,
+	EVT_ERROR,
+	EVT_STARTED,
+	EVT_STOPPED,
+	EVT_CLIENT_CONNECTED,
+	EVT_CLIENT_DISCONNECTED
+} = require("../Base/enums");
 
 class SocketServer extends SocketBase {
 	_httpMethodHandlers = {};
 
 	constructor (serverName = "Server") {
-		super(SERVER, serverName);
+		super(ENV_SERVER, serverName);
 
 		this.on(CMD_REQUEST, "GET", ({data, response, clientId}) => {
 			this._httpMethodHandlers.GET = this._httpMethodHandlers.GET || {};
@@ -31,7 +67,7 @@ class SocketServer extends SocketBase {
 	}
 
 	start (port = 8080) {
-		if (this.state() === STARTED) {
+		if (this.state() === STA_STARTED) {
 			this.log("Call to start() - already started!");
 			return;
 		}
@@ -41,13 +77,13 @@ class SocketServer extends SocketBase {
 
 		this.log("Server started");
 		this.emit(EVT_STARTED, {port});
-		this.state(STARTED);
+		this.state(STA_STARTED);
 	}
 
 	stop () {
 		this._socket.close();
 		this.emit(EVT_STOPPED);
-		this.state(STOPPED);
+		this.state(STA_STOPPED);
 	}
 
 	broadcastCommand (cmd, data) {
@@ -106,7 +142,7 @@ class SocketServer extends SocketBase {
 	}
 
 	send (data, socketId) {
-		this.sendCommand("genericMessage", data, socketId);
+		this.sendCommand(CMD_MESSAGE, data, socketId);
 	}
 
 	_onClientConnect = (socket) => {
@@ -128,11 +164,11 @@ class SocketServer extends SocketBase {
 		this.sendCommand(CMD_COMMAND_MAP, this._commandMap, socket.id);
 		this.sendCommand(CMD_READY, "", socket.id);
 
-		this.emit(EVT_CLIENT_CONNECT, socket.id);
+		this.emit(EVT_CLIENT_CONNECTED, socket.id);
 	}
 
 	_onClientDisconnect (data, socket) {
-		this.emitId(EVT_CLIENT_DISCONNECT, socket.id, data);
+		this.emitId(EVT_CLIENT_DISCONNECTED, socket.id, data);
 		delete this._socketById[socket.id];
 	}
 

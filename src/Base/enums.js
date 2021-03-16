@@ -1,12 +1,12 @@
-const DISCONNECTED = 0;
-const CONNECTING = 1;
-const CONNECTED = 2;
-const READY = 3;
-const STARTED = 4;
-const STOPPED = 5;
-const CLIENT = 6;
-const SERVER = 7;
-const COMMAND = "command";
+const STA_DISCONNECTED = 0;
+const STA_CONNECTING = 1;
+const STA_CONNECTED = 2;
+const STA_READY = 3;
+const STA_STARTED = 4;
+const STA_STOPPED = 5;
+
+const ENV_CLIENT = 1;
+const ENV_SERVER = 2;
 
 const CMD_PING = "ping";
 const CMD_COMMAND_MAP = "commandMap";
@@ -16,6 +16,7 @@ const CMD_REQUEST = "request";
 const CMD_RESPONSE = "response";
 const CMD_MESSAGE = "message";
 
+const EVT_COMMAND = "command";
 const EVT_READY = "ready";
 const EVT_MESSAGE = "message";
 const EVT_CONNECTED = "connected";
@@ -31,15 +32,16 @@ const EVT_CLIENT_DISCONNECTED = "clientDisconnected";
 
 module.exports = {
 	// States
-	DISCONNECTED,
-	CONNECTING,
-	CONNECTED,
-	READY,
-	STARTED,
-	STOPPED,
-	CLIENT,
-	SERVER,
-	COMMAND,
+	STA_DISCONNECTED,
+	STA_CONNECTING,
+	STA_CONNECTED,
+	STA_READY,
+	STA_STARTED,
+	STA_STOPPED,
+
+	// Environments
+	ENV_CLIENT,
+	ENV_SERVER,
 
 	// Commands
 	CMD_COMMAND_MAP,
@@ -51,6 +53,7 @@ module.exports = {
 	CMD_RESPONSE,
 
 	// Events
+	EVT_COMMAND,
 	EVT_CONNECTED,
 	EVT_CONNECTING,
 	EVT_DISCONNECTED,

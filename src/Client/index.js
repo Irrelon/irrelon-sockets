@@ -1,28 +1,64 @@
 const WebSocket = require("isomorphic-ws");
 const SocketBase = require("../Base");
 const {hexId} = require("../Base/utils");
-const {READY, CONNECTING, CONNECTED, DISCONNECTED, CLIENT, COMMAND} = require("../Base/enums");
+const {
+	// States
+	STA_DISCONNECTED,
+	STA_CONNECTING,
+	STA_CONNECTED,
+	STA_READY,
+	STA_STARTED,
+	STA_STOPPED,
+
+	// Environments
+	ENV_CLIENT,
+	ENV_SERVER,
+
+	// Commands
+	CMD_COMMAND_MAP,
+	CMD_DEFINE_COMMAND,
+	CMD_MESSAGE,
+	CMD_PING,
+	CMD_READY,
+	CMD_REQUEST,
+	CMD_RESPONSE,
+
+	// Events
+	EVT_COMMAND,
+	EVT_CONNECTED,
+	EVT_CONNECTING,
+	EVT_DISCONNECTED,
+	EVT_MESSAGE,
+	EVT_READY,
+	EVT_RECONNECTING,
+	EVT_STATE_CHANGE,
+	EVT_ERROR,
+	EVT_STARTED,
+	EVT_STOPPED,
+	EVT_CLIENT_CONNECTED,
+	EVT_CLIENT_DISCONNECTED
+} = require("../Base/enums");
 
 class SocketClient extends SocketBase {
 	_backoff = 1000;
 	_buffer = [];
 
 	constructor (clientName = "Client") {
-		super(CLIENT, clientName);
+		super(ENV_CLIENT, clientName);
 
 		// Define the default command listeners
-		this.on(COMMAND, CMD_COMMAND_MAP, this._onCommandMap);
-		this.on(COMMAND, CMD_DEFINE_COMMAND, this._onDefineCommand);
-		this.on(COMMAND, CMD_READY, this._onReadyCommand);
+		this.on(EVT_COMMAND, CMD_COMMAND_MAP, this._onCommandMap);
+		this.on(EVT_COMMAND, CMD_DEFINE_COMMAND, this._onDefineCommand);
+		this.on(EVT_COMMAND, CMD_READY, this._onReadyCommand);
 	}
 
 	connect (host) {
 		// Check if we are already connected
-		if (this.state() === CONNECTED) {
+		if (this.state() === STA_CONNECTED) {
 			return;
 		}
 
-		this.state(CONNECTING);
+		this.state(STA_CONNECTING);
 
 		this._host = host;
 		this._socket = new WebSocket(host);
@@ -46,7 +82,7 @@ class SocketClient extends SocketBase {
 	}
 
 	disconnect () {
-		this.state(DISCONNECTED);
+		this.state(STA_DISCONNECTED);
 
 		try {
 			this._socket.terminate();
@@ -57,7 +93,7 @@ class SocketClient extends SocketBase {
 	}
 
 	sendCommand (cmd, data) {
-		if (this.state() !== READY) {
+		if (this.state() !== STA_READY) {
 			// Buffer the message and send when connected
 			this._buffer.push({
 				"type": "sendCommand",
@@ -90,7 +126,7 @@ class SocketClient extends SocketBase {
 	}
 
 	sendRequest (requestName, data, callback) {
-		if (this.state() !== READY) {
+		if (this.state() !== STA_READY) {
 			// Buffer the message and send when connected
 			this._buffer.push({
 				"type": "sendRequest",
@@ -144,17 +180,17 @@ class SocketClient extends SocketBase {
 	}
 
 	send (data) {
-		this.sendCommand("genericMessage", data);
+		this.sendCommand(CMD_MESSAGE, data);
 	}
 
 	_onConnected = () => {
 		this._backoff = 1000;
-		this.state(CONNECTED);
+		this.state(STA_CONNECTED);
 		this.emit(EVT_CONNECTED);
 	}
 
 	_onUnexpectedDisconnect = () => {
-		this.state(DISCONNECTED);
+		this.state(STA_DISCONNECTED);
 
 		this.log("Disconnected from server");
 		this.emit(EVT_DISCONNECTED);
@@ -185,7 +221,7 @@ class SocketClient extends SocketBase {
 
 	_onReadyCommand = (data) => {
 		this.log("_onReadyCommand", data);
-		this.state(READY);
+		this.state(STA_READY);
 		this.emit(CMD_READY);
 		this.processBuffer();
 	}

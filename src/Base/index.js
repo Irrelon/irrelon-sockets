@@ -1,6 +1,42 @@
 const Emitter = require("@irrelon/emitter");
 const encoders = require("./encoders");
-const {COMMAND, CLIENT, DISCONNECTED} = require("./enums");
+const {
+	// States
+	STA_DISCONNECTED,
+	STA_CONNECTING,
+	STA_CONNECTED,
+	STA_READY,
+	STA_STARTED,
+	STA_STOPPED,
+
+	// Environments
+	ENV_CLIENT,
+	ENV_SERVER,
+
+	// Commands
+	CMD_COMMAND_MAP,
+	CMD_DEFINE_COMMAND,
+	CMD_MESSAGE,
+	CMD_PING,
+	CMD_READY,
+	CMD_REQUEST,
+	CMD_RESPONSE,
+
+	// Events
+	EVT_COMMAND,
+	EVT_CONNECTED,
+	EVT_CONNECTING,
+	EVT_DISCONNECTED,
+	EVT_MESSAGE,
+	EVT_READY,
+	EVT_RECONNECTING,
+	EVT_STATE_CHANGE,
+	EVT_ERROR,
+	EVT_STARTED,
+	EVT_STOPPED,
+	EVT_CLIENT_CONNECTED,
+	EVT_CLIENT_DISCONNECTED
+} = require("./enums");
 
 class SocketBase {
 	_socketById = {};
@@ -10,15 +46,15 @@ class SocketBase {
 	_commandMap = [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE];
 	_commandEncoding = {
 		"*": encoders.jsonEncoder,
-		"CMD_COMMAND_MAP": encoders.stringArrayEncoder,
-		"CMD_DEFINE_COMMAND": encoders.stringArrayEncoder,
-		"CMD_READY": encoders.noDataEncoder,
-		"CMD_REQUEST": encoders.jsonEncoder,
-		"CMD_RESPONSE": encoders.jsonEncoder,
-		"CMD_MESSAGE": encoders.jsonEncoder
+		[CMD_COMMAND_MAP]: encoders.stringArrayEncoder,
+		[CMD_DEFINE_COMMAND]: encoders.stringArrayEncoder,
+		[CMD_READY]: encoders.noDataEncoder,
+		[CMD_REQUEST]: encoders.jsonEncoder,
+		[CMD_RESPONSE]: encoders.jsonEncoder,
+		[CMD_MESSAGE]: encoders.jsonEncoder
 	};
 	_idCounter = 0;
-	_state = DISCONNECTED;
+	_state = STA_DISCONNECTED;
 
 	constructor (env, name) {
 		this._name = name;
@@ -86,7 +122,7 @@ class SocketBase {
 
 		this.log(`Defined new command "${command}"`);
 
-		if (this._env === CLIENT) return this._commandMap.length - 1;
+		if (this._env === ENV_CLIENT) return this._commandMap.length - 1;
 
 		// Update any connected clients with the new command
 		this.sendCommand(CMD_DEFINE_COMMAND, [command, encoderName || this.encoderNameByObject(encoder)]);
@@ -167,7 +203,7 @@ class SocketBase {
 		} else if (command === CMD_MESSAGE) {
 			this.emit(EVT_MESSAGE, data);
 		} else {
-			this.emitId(COMMAND, command, data);
+			this.emitId(EVT_COMMAND, command, data);
 		}
 
 		return {
