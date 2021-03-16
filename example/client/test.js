@@ -20,4 +20,8 @@ client.on("request", "aServerRequest", ({data, response, clientId}) => {
 	});
 });
 
+client.GET("/test").then((response) => {
+	console.log("GET response was", response);
+});
+
 client.connect("ws://localhost:9999");

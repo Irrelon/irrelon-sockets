@@ -4,8 +4,30 @@ const {hexId} = require("../Base/utils");
 const {SERVER, STARTED, STOPPED} = require("../Base/enums");
 
 class SocketServer extends SocketBase {
+	_httpMethodHandlers = {};
+
 	constructor (serverName = "Server") {
 		super(SERVER, serverName);
+
+		this.on("request", "GET", ({data, response, clientId}) => {
+			this._httpMethodHandlers.GET = this._httpMethodHandlers.GET || {};
+			this._httpMethodHandlers.GET[data.url]({"body": data, clientId}, {"send": response});
+		});
+
+		this.on("request", "POST", ({data, response, clientId}) => {
+			this._httpMethodHandlers.POST = this._httpMethodHandlers.POST || {};
+			this._httpMethodHandlers.POST[data.url]({"body": data, clientId}, {"send": response});
+		});
+
+		this.on("request", "PUT", ({data, response, clientId}) => {
+			this._httpMethodHandlers.PUT = this._httpMethodHandlers.PUT || {};
+			this._httpMethodHandlers.PUT[data.url]({"body": data, clientId}, {"send": response});
+		});
+
+		this.on("request", "DELETE", ({data, response, clientId}) => {
+			this._httpMethodHandlers.DELETE = this._httpMethodHandlers.DELETE || {};
+			this._httpMethodHandlers.DELETE[data.url]({"body": data, clientId}, {"send": response});
+		});
 	}
 
 	start (port = 8080) {
@@ -61,6 +83,26 @@ class SocketServer extends SocketBase {
 		if (!socketId) return this.log("Request ID not recognised, already replied?");
 
 		this.sendCommand("response", {"id": requestId, "data": responseData}, socketId);
+	}
+
+	GET (url, callback) {
+		this._httpMethodHandlers.GET = this._httpMethodHandlers.GET || {};
+		this._httpMethodHandlers.GET[url] = callback;
+	}
+
+	POST (url, callback) {
+		this._httpMethodHandlers.POST = this._httpMethodHandlers.POST || {};
+		this._httpMethodHandlers.POST[url] = callback;
+	}
+
+	PUT (url, callback) {
+		this._httpMethodHandlers.PUT = this._httpMethodHandlers.PUT || {};
+		this._httpMethodHandlers.PUT[url] = callback;
+	}
+
+	DELETE (url, callback) {
+		this._httpMethodHandlers.DELETE = this._httpMethodHandlers.DELETE || {};
+		this._httpMethodHandlers.DELETE[url] = callback;
 	}
 
 	_onClientConnect = (socket) => {

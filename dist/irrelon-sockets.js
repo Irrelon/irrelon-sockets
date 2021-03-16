@@ -95,10 +95,10 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(26),
+	var _require = __webpack_require__(27),
 	    hexId = _require.hexId;
 
-	var _require2 = __webpack_require__(27),
+	var _require2 = __webpack_require__(26),
 	    READY = _require2.READY,
 	    CONNECTING = _require2.CONNECTING,
 	    CONNECTED = _require2.CONNECTED,
@@ -282,6 +282,62 @@ var IrrelonSockets =
 	      this.sendCommand("response", {
 	        "id": requestId,
 	        "data": responseData
+	      });
+	    }
+	  }, {
+	    key: "GET",
+	    value: function GET(url, data) {
+	      var _this3 = this;
+
+	      return new Promise(function (resolve, reject) {
+	        _this3.sendRequest("GET", {
+	          url: url,
+	          "body": data
+	        }, function (responseData) {
+	          resolve(responseData);
+	        });
+	      });
+	    }
+	  }, {
+	    key: "POST",
+	    value: function POST(url, data) {
+	      var _this4 = this;
+
+	      return new Promise(function (resolve, reject) {
+	        _this4.sendRequest("POST", {
+	          url: url,
+	          "body": data
+	        }, function (responseData) {
+	          resolve(responseData);
+	        });
+	      });
+	    }
+	  }, {
+	    key: "PUT",
+	    value: function PUT(url, data) {
+	      var _this5 = this;
+
+	      return new Promise(function (resolve, reject) {
+	        _this5.sendRequest("PUT", {
+	          url: url,
+	          "body": data
+	        }, function (responseData) {
+	          resolve(responseData);
+	        });
+	      });
+	    }
+	  }, {
+	    key: "DELETE",
+	    value: function DELETE(url, data) {
+	      var _this6 = this;
+
+	      return new Promise(function (resolve, reject) {
+	        _this6.sendRequest("DELETE", {
+	          url: url,
+	          "body": data
+	        }, function (responseData) {
+	          resolve(responseData);
+	        });
 	      });
 	    }
 	  }, {
@@ -585,12 +641,9 @@ var IrrelonSockets =
 	var encoders = __webpack_require__(25);
 
 	var _require = __webpack_require__(26),
-	    hexId = _require.hexId;
-
-	var _require2 = __webpack_require__(27),
-	    COMMAND = _require2.COMMAND,
-	    CLIENT = _require2.CLIENT,
-	    DISCONNECTED = _require2.DISCONNECTED;
+	    COMMAND = _require.COMMAND,
+	    CLIENT = _require.CLIENT,
+	    DISCONNECTED = _require.DISCONNECTED;
 
 	var SocketBase = /*#__PURE__*/function () {
 	  function SocketBase(env, name) {
@@ -2018,27 +2071,6 @@ var IrrelonSockets =
 
 	"use strict";
 
-	var _idCounter = 0;
-	/**
-	 * Generates a new 16-character hexadecimal unique ID
-	 * @return {String} The id.
-	 */
-
-	var hexId = function hexId() {
-	  _idCounter++;
-	  return (_idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
-	};
-
-	module.exports = {
-	  hexId: hexId
-	};
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports) {
-
-	"use strict";
-
 	var DISCONNECTED = 0;
 	var CONNECTING = 1;
 	var CONNECTED = 2;
@@ -2058,6 +2090,27 @@ var IrrelonSockets =
 	  CLIENT: CLIENT,
 	  SERVER: SERVER,
 	  COMMAND: COMMAND
+	};
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	var _idCounter = 0;
+	/**
+	 * Generates a new 16-character hexadecimal unique ID
+	 * @return {String} The id.
+	 */
+
+	var hexId = function hexId() {
+	  _idCounter++;
+	  return (_idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	};
+
+	module.exports = {
+	  hexId: hexId
 	};
 
 /***/ }),
@@ -2094,10 +2147,10 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(26),
+	var _require = __webpack_require__(27),
 	    hexId = _require.hexId;
 
-	var _require2 = __webpack_require__(27),
+	var _require2 = __webpack_require__(26),
 	    SERVER = _require2.SERVER,
 	    STARTED = _require2.STARTED,
 	    STOPPED = _require2.STOPPED;
@@ -2113,6 +2166,7 @@ var IrrelonSockets =
 	    var serverName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "Server";
 	    (0, _classCallCheck2["default"])(this, SocketServer);
 	    _this = _super.call(this, SERVER, serverName);
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_httpMethodHandlers", {});
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onClientConnect", function (socket) {
 	      socket.id = hexId();
 	      _this._socketById[socket.id] = socket;
@@ -2132,6 +2186,63 @@ var IrrelonSockets =
 
 	      _this.emit("clientConnect", socket.id);
 	    });
+
+	    _this.on("request", "GET", function (_ref) {
+	      var data = _ref.data,
+	          response = _ref.response,
+	          clientId = _ref.clientId;
+	      _this._httpMethodHandlers.GET = _this._httpMethodHandlers.GET || {};
+
+	      _this._httpMethodHandlers.GET[data.url]({
+	        "body": data,
+	        clientId: clientId
+	      }, {
+	        "send": response
+	      });
+	    });
+
+	    _this.on("request", "POST", function (_ref2) {
+	      var data = _ref2.data,
+	          response = _ref2.response,
+	          clientId = _ref2.clientId;
+	      _this._httpMethodHandlers.POST = _this._httpMethodHandlers.POST || {};
+
+	      _this._httpMethodHandlers.POST[data.url]({
+	        "body": data,
+	        clientId: clientId
+	      }, {
+	        "send": response
+	      });
+	    });
+
+	    _this.on("request", "PUT", function (_ref3) {
+	      var data = _ref3.data,
+	          response = _ref3.response,
+	          clientId = _ref3.clientId;
+	      _this._httpMethodHandlers.PUT = _this._httpMethodHandlers.PUT || {};
+
+	      _this._httpMethodHandlers.PUT[data.url]({
+	        "body": data,
+	        clientId: clientId
+	      }, {
+	        "send": response
+	      });
+	    });
+
+	    _this.on("request", "DELETE", function (_ref4) {
+	      var data = _ref4.data,
+	          response = _ref4.response,
+	          clientId = _ref4.clientId;
+	      _this._httpMethodHandlers.DELETE = _this._httpMethodHandlers.DELETE || {};
+
+	      _this._httpMethodHandlers.DELETE[data.url]({
+	        "body": data,
+	        clientId: clientId
+	      }, {
+	        "send": response
+	      });
+	    });
+
 	    return _this;
 	  }
 
@@ -2170,10 +2281,10 @@ var IrrelonSockets =
 	    value: function broadcastCommand(cmd, data) {
 	      var _this2 = this;
 
-	      Object.entries(this._socketById).forEach(function (_ref) {
-	        var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
-	            key = _ref2[0],
-	            socket = _ref2[1];
+	      Object.entries(this._socketById).forEach(function (_ref5) {
+	        var _ref6 = (0, _slicedToArray2["default"])(_ref5, 2),
+	            key = _ref6[0],
+	            socket = _ref6[1];
 
 	        (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "sendCommand", _this2).call(_this2, cmd, data, socket);
 	      });
@@ -2207,6 +2318,30 @@ var IrrelonSockets =
 	        "id": requestId,
 	        "data": responseData
 	      }, socketId);
+	    }
+	  }, {
+	    key: "GET",
+	    value: function GET(url, callback) {
+	      this._httpMethodHandlers.GET = this._httpMethodHandlers.GET || {};
+	      this._httpMethodHandlers.GET[url] = callback;
+	    }
+	  }, {
+	    key: "POST",
+	    value: function POST(url, callback) {
+	      this._httpMethodHandlers.POST = this._httpMethodHandlers.POST || {};
+	      this._httpMethodHandlers.POST[url] = callback;
+	    }
+	  }, {
+	    key: "PUT",
+	    value: function PUT(url, callback) {
+	      this._httpMethodHandlers.PUT = this._httpMethodHandlers.PUT || {};
+	      this._httpMethodHandlers.PUT[url] = callback;
+	    }
+	  }, {
+	    key: "DELETE",
+	    value: function DELETE(url, callback) {
+	      this._httpMethodHandlers.DELETE = this._httpMethodHandlers.DELETE || {};
+	      this._httpMethodHandlers.DELETE[url] = callback;
 	    }
 	  }, {
 	    key: "_onClientDisconnect",

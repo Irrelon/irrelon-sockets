@@ -27,4 +27,8 @@ server.on("request", "aClientRequest", ({data, response, clientId}) => {
 	});
 });
 
+server.GET("/test", (req, res) => {
+	res.send({"GET RESPONSE": true});
+});
+
 server.start(9999);

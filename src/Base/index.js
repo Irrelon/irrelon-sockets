@@ -1,6 +1,5 @@
 const Emitter = require("@irrelon/emitter");
 const encoders = require("./encoders");
-const {hexId} = require("./utils");
 const {COMMAND, CLIENT, DISCONNECTED} = require("./enums");
 
 class SocketBase {
