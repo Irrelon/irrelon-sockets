@@ -53,9 +53,12 @@ class SocketBase {
 		[CMD_RESPONSE]: encoders.jsonEncoder,
 		[CMD_MESSAGE]: encoders.jsonEncoder
 	};
-	_idCounter = 0;
 	_state = STA_DISCONNECTED;
 
+   /**
+    * @param {string} env The environment for the SocketBase instance.
+    * Either ENV_CLIENT or ENV_SERVER.
+    */
 	constructor (env, name) {
 		this._name = name;
 		this._env = env;
@@ -84,6 +87,12 @@ class SocketBase {
 		return this._dictionary[index];
 	}
 
+   /**
+    * Gets or sets the current instance state.
+    * @param {string} [newState] Optional. If provided, sets the current
+    * instance state to the passed state value. If not provided the function
+    * operates as a getter and the current state is returned instead.
+    */
 	state = (newState) => {
 		if (newState === undefined) return this._state;
 

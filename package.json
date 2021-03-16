@@ -6,7 +6,7 @@
 	"scripts": {
 		"clean": "rimraf dist",
 		"build": "npm run clean && webpack --config webpack/base.config.js",
-		"webserver": "webpack-dev-server --port 3000 --config webpack/development.config.js --progress --colors --hot --content-base dist",
+		"webserver": "webpack-dev-server --port 3001 --config webpack/development.config.js --progress --colors --hot --content-base example/client",
 		"server": "node ./example/server/index.js",
 		"build-watch": "node webpack/buildWatch.js"
 	},

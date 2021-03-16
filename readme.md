@@ -63,7 +63,7 @@ client.send({foo: true});
 > Data received is automatically decoded with JSON.parse.
  
 ```js
-server.on(CMD_MESSAGE, (data) => {
+server.on(CMD_MESSAGE, (data, socketId) => {
     // data: {foo: true}
 });
 ```
@@ -90,7 +90,7 @@ client.sendRequest("myRequest", {foo: true}, (responseData) => {
 is automatically encoded with JSON.stringify.
 
 ```js
-server.on(CMD_REQUEST, "myRequest", ({data, response, socketId}) => {
+server.on(CMD_REQUEST, "myRequest", (data, response, socketId) => {
     // data: {foo: true}
     // response: a function to send a response
     // socketId: the id of the client that sent the request
@@ -113,4 +113,7 @@ server.on(EVT_COMMAND, "myCommandName", (data, socketId) => {
 ```
 
 # Encoding and Compression
-Under the hood the library keeps track of 
+Under the hood the library keeps track of command strings and encodes them to binary representations rather than sending the entire string. Other compression techniques may also be employed.
+
+# API Reference
+Client.send(`data`)
