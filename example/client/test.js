@@ -15,7 +15,7 @@ client.sendRequest("aClientRequest", {
 	console.log("Got aClientRequest response", responseData);
 });
 
-client.on(CMD_REQUEST, "aServerRequest", ({data, response, clientId}) => {
+client.on(CMD_REQUEST, "aServerRequest", (data, response, socketId) => {
 	response({
 		"hello": true
 	});

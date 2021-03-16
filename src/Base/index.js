@@ -201,9 +201,9 @@ class SocketBase {
 				this.log("Response received without a request id!");
 			}
 		} else if (command === CMD_MESSAGE) {
-			this.emit(EVT_MESSAGE, data);
+			this.emit(EVT_MESSAGE, data, socketId);
 		} else {
-			this.emitId(EVT_COMMAND, command, data);
+			this.emitId(EVT_COMMAND, command, data, socketId);
 		}
 
 		return {
@@ -215,7 +215,7 @@ class SocketBase {
 	}
 
 	_onRequest (requestName, requestId, data, response, socketId = "") {
-		this.emitId(CMD_REQUEST, requestName, {data, response, socketId});
+		this.emitId(CMD_REQUEST, requestName, data, response, socketId);
 	}
 
 	_encode (command, [commandId, data]) {

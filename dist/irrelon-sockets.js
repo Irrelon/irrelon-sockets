@@ -941,9 +941,9 @@ var IrrelonSockets =
 	          this.log("Response received without a request id!");
 	        }
 	      } else if (command === CMD_MESSAGE) {
-	        this.emit(EVT_MESSAGE, data);
+	        this.emit(EVT_MESSAGE, data, socketId);
 	      } else {
-	        this.emitId(EVT_COMMAND, command, data);
+	        this.emitId(EVT_COMMAND, command, data, socketId);
 	      }
 
 	      return {
@@ -957,11 +957,7 @@ var IrrelonSockets =
 	    key: "_onRequest",
 	    value: function _onRequest(requestName, requestId, data, response) {
 	      var socketId = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "";
-	      this.emitId(CMD_REQUEST, requestName, {
-	        data: data,
-	        response: response,
-	        socketId: socketId
-	      });
+	      this.emitId(CMD_REQUEST, requestName, data, response, socketId);
 	    }
 	  }, {
 	    key: "_encode",
@@ -2367,57 +2363,45 @@ var IrrelonSockets =
 	      _this.emit(EVT_CLIENT_CONNECTED, socket.id);
 	    });
 
-	    _this.on(CMD_REQUEST, "GET", function (_ref) {
-	      var data = _ref.data,
-	          response = _ref.response,
-	          clientId = _ref.clientId;
+	    _this.on(CMD_REQUEST, "GET", function (data, response, socketId) {
 	      _this._httpMethodHandlers.GET = _this._httpMethodHandlers.GET || {};
 
 	      _this._httpMethodHandlers.GET[data.url]({
 	        "body": data,
-	        clientId: clientId
+	        socketId: socketId
 	      }, {
 	        "send": response
 	      });
 	    });
 
-	    _this.on(CMD_REQUEST, "POST", function (_ref2) {
-	      var data = _ref2.data,
-	          response = _ref2.response,
-	          clientId = _ref2.clientId;
+	    _this.on(CMD_REQUEST, "POST", function (data, response, socketId) {
 	      _this._httpMethodHandlers.POST = _this._httpMethodHandlers.POST || {};
 
 	      _this._httpMethodHandlers.POST[data.url]({
 	        "body": data,
-	        clientId: clientId
+	        socketId: socketId
 	      }, {
 	        "send": response
 	      });
 	    });
 
-	    _this.on(CMD_REQUEST, "PUT", function (_ref3) {
-	      var data = _ref3.data,
-	          response = _ref3.response,
-	          clientId = _ref3.clientId;
+	    _this.on(CMD_REQUEST, "PUT", function (data, response, socketId) {
 	      _this._httpMethodHandlers.PUT = _this._httpMethodHandlers.PUT || {};
 
 	      _this._httpMethodHandlers.PUT[data.url]({
 	        "body": data,
-	        clientId: clientId
+	        socketId: socketId
 	      }, {
 	        "send": response
 	      });
 	    });
 
-	    _this.on(CMD_REQUEST, "DELETE", function (_ref4) {
-	      var data = _ref4.data,
-	          response = _ref4.response,
-	          clientId = _ref4.clientId;
+	    _this.on(CMD_REQUEST, "DELETE", function (data, response, socketId) {
 	      _this._httpMethodHandlers.DELETE = _this._httpMethodHandlers.DELETE || {};
 
 	      _this._httpMethodHandlers.DELETE[data.url]({
 	        "body": data,
-	        clientId: clientId
+	        socketId: socketId
 	      }, {
 	        "send": response
 	      });
@@ -2461,10 +2445,10 @@ var IrrelonSockets =
 	    value: function broadcastCommand(cmd, data) {
 	      var _this2 = this;
 
-	      Object.entries(this._socketById).forEach(function (_ref5) {
-	        var _ref6 = (0, _slicedToArray2["default"])(_ref5, 2),
-	            key = _ref6[0],
-	            socket = _ref6[1];
+	      Object.entries(this._socketById).forEach(function (_ref) {
+	        var _ref2 = (0, _slicedToArray2["default"])(_ref, 2),
+	            key = _ref2[0],
+	            socket = _ref2[1];
 
 	        (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "sendCommand", _this2).call(_this2, cmd, data, socket);
 	      });

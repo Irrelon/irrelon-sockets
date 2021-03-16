@@ -29,8 +29,8 @@ server.on(EVT_CLIENT_CONNECTED, (socketId) => {
 	server.send({"foo": true}, socketId);
 });
 
-server.on(CMD_REQUEST, "aClientRequest", ({data, response, clientId}) => {
-	console.log("Server received request", data, clientId, response);
+server.on(CMD_REQUEST, "aClientRequest", (data, response, socketId) => {
+	console.log("Server received request", data, socketId, response);
 	response({
 		"hello": true
 	});

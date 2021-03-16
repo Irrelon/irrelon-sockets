@@ -45,24 +45,24 @@ class SocketServer extends SocketBase {
 	constructor (serverName = "Server") {
 		super(ENV_SERVER, serverName);
 
-		this.on(CMD_REQUEST, "GET", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "GET", (data, response, socketId) => {
 			this._httpMethodHandlers.GET = this._httpMethodHandlers.GET || {};
-			this._httpMethodHandlers.GET[data.url]({"body": data, clientId}, {"send": response});
+			this._httpMethodHandlers.GET[data.url]({"body": data, socketId}, {"send": response});
 		});
 
-		this.on(CMD_REQUEST, "POST", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "POST", (data, response, socketId) => {
 			this._httpMethodHandlers.POST = this._httpMethodHandlers.POST || {};
-			this._httpMethodHandlers.POST[data.url]({"body": data, clientId}, {"send": response});
+			this._httpMethodHandlers.POST[data.url]({"body": data, socketId}, {"send": response});
 		});
 
-		this.on(CMD_REQUEST, "PUT", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "PUT", (data, response, socketId) => {
 			this._httpMethodHandlers.PUT = this._httpMethodHandlers.PUT || {};
-			this._httpMethodHandlers.PUT[data.url]({"body": data, clientId}, {"send": response});
+			this._httpMethodHandlers.PUT[data.url]({"body": data, socketId}, {"send": response});
 		});
 
-		this.on(CMD_REQUEST, "DELETE", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "DELETE", (data, response, socketId) => {
 			this._httpMethodHandlers.DELETE = this._httpMethodHandlers.DELETE || {};
-			this._httpMethodHandlers.DELETE[data.url]({"body": data, clientId}, {"send": response});
+			this._httpMethodHandlers.DELETE[data.url]({"body": data, socketId}, {"send": response});
 		});
 	}
 
