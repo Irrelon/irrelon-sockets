@@ -111,6 +111,38 @@ class SocketClient extends SocketBase {
 		this.sendCommand("response", {"id": requestId, "data": responseData});
 	}
 
+	GET (url, data) {
+		return new Promise((resolve, reject) => {
+			this.sendRequest("GET", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
+	POST (url, data) {
+		return new Promise((resolve, reject) => {
+			this.sendRequest("POST", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
+	PUT (url, data) {
+		return new Promise((resolve, reject) => {
+			this.sendRequest("PUT", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
+	DELETE (url, data) {
+		return new Promise((resolve, reject) => {
+			this.sendRequest("DELETE", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
 	_onConnected = () => {
 		this._backoff = 1000;
 		this.state(CONNECTED);
