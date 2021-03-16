@@ -10,12 +10,21 @@ server.on("stopped", () => {
 	console.log("Stopped");
 });
 
-server.on("clientConnect", (clientId) => {
-	console.log("Client connected", clientId);
-	server.defineCommand("fooBar", "jsonEncoder");
-	server.sendCommand("fooBar", {"itWorked": true}, clientId);
+server.on("clientConnect", (socketId) => {
+	console.log("Client connected", socketId);
 
-	console.log("charCode is", server.fromDictionaryId(server.toDictionaryId("fooBar")));
+	server.sendRequest("aServerRequest", {
+		"data": true
+	}, (responseData) => {
+		console.log("Got aServerRequest response", responseData);
+	}, socketId);
+});
+
+server.on("request", "aClientRequest", ({data, response, clientId}) => {
+	console.log("Server received request", data, clientId, response);
+	response({
+		"hello": true
+	});
 });
 
 server.start(9999);

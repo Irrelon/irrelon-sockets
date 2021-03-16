@@ -56,7 +56,7 @@ var IrrelonSockets =
 
 	var Client = __webpack_require__(2);
 
-	var Server = __webpack_require__(27);
+	var Server = __webpack_require__(28);
 
 	module.exports = {
 	  Client: Client,
@@ -96,12 +96,15 @@ var IrrelonSockets =
 	var SocketBase = __webpack_require__(16);
 
 	var _require = __webpack_require__(26),
-	    READY = _require.READY,
-	    CONNECTING = _require.CONNECTING,
-	    CONNECTED = _require.CONNECTED,
-	    DISCONNECTED = _require.DISCONNECTED,
-	    CLIENT = _require.CLIENT,
-	    COMMAND = _require.COMMAND;
+	    hexId = _require.hexId;
+
+	var _require2 = __webpack_require__(27),
+	    READY = _require2.READY,
+	    CONNECTING = _require2.CONNECTING,
+	    CONNECTED = _require2.CONNECTED,
+	    DISCONNECTED = _require2.DISCONNECTED,
+	    CLIENT = _require2.CLIENT,
+	    COMMAND = _require2.COMMAND;
 
 	var SocketClient = /*#__PURE__*/function (_SocketBase) {
 	  (0, _inherits2["default"])(SocketClient, _SocketBase);
@@ -127,7 +130,7 @@ var IrrelonSockets =
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onUnexpectedDisconnect", function () {
 	      _this.state(DISCONNECTED);
 
-	      console.log("Disconnected from server");
+	      _this.log("Disconnected from server");
 
 	      _this.emit("disconnected");
 
@@ -144,17 +147,17 @@ var IrrelonSockets =
 	      (0, _get2["default"])((_thisSuper = (0, _assertThisInitialized2["default"])(_this), (0, _getPrototypeOf2["default"])(SocketClient.prototype)), "_onMessage", _thisSuper).call(_thisSuper, rawMessage.data);
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onCommandMap", function (data) {
-	      console.log("_onCommandMap", data);
+	      _this.log("_onCommandMap", data);
 
 	      _this.commandMap(data);
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onDefineCommand", function (data) {
-	      console.log("_onDefineCommand", data);
+	      _this.log("_onDefineCommand", data);
 
 	      _this.defineCommand(data[0], data[1]);
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onReadyCommand", function (data) {
-	      console.log("_onReadyCommand", data);
+	      _this.log("_onReadyCommand", data);
 
 	      _this.state(READY);
 
@@ -217,7 +220,7 @@ var IrrelonSockets =
 	  }, {
 	    key: "sendCommand",
 	    value: function sendCommand(cmd, data) {
-	      if (this.state() !== CONNECTED) {
+	      if (this.state() !== READY) {
 	        // Buffer the message and send when connected
 	        this._buffer.push({
 	          "type": "sendCommand",
@@ -242,12 +245,56 @@ var IrrelonSockets =
 
 	            break;
 
+	          case "sendRequest":
+	            _this2.sendRequest(bufferItem.requestName, bufferItem.data, bufferItem.callback);
+
+	            break;
+
 	          default:
 	            break;
 	        }
 	      });
 
 	      this._buffer = [];
+	    }
+	  }, {
+	    key: "sendRequest",
+	    value: function sendRequest(requestName, data, callback) {
+	      if (this.state() !== READY) {
+	        // Buffer the message and send when connected
+	        this._buffer.push({
+	          "type": "sendRequest",
+	          requestName: requestName,
+	          data: data,
+	          callback: callback
+	        });
+
+	        return;
+	      }
+
+	      var requestId = hexId();
+	      this._responseCallbackByRequestId[requestId] = callback;
+	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketClient.prototype), "sendRequest", this).call(this, requestName, requestId, data, this._socket);
+	    }
+	  }, {
+	    key: "sendResponse",
+	    value: function sendResponse(requestId, responseData) {
+	      this.sendCommand("response", {
+	        "id": requestId,
+	        "data": responseData
+	      });
+	    }
+	  }, {
+	    key: "_onRequest",
+	    value: function _onRequest(requestName, requestId, data, response) {
+	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketClient.prototype), "_onRequest", this).call(this, requestName, requestId, data, response, "");
+	    }
+	  }, {
+	    key: "_onResponse",
+	    value: function _onResponse(requestId, data) {
+	      var responseCallback = this._responseCallbackByRequestId[requestId];
+	      responseCallback(data);
+	      delete this._responseCallbackByRequestId[requestId];
 	    }
 	  }]);
 	  return SocketClient;
@@ -538,9 +585,12 @@ var IrrelonSockets =
 	var encoders = __webpack_require__(25);
 
 	var _require = __webpack_require__(26),
-	    COMMAND = _require.COMMAND,
-	    CLIENT = _require.CLIENT,
-	    DISCONNECTED = _require.DISCONNECTED;
+	    hexId = _require.hexId;
+
+	var _require2 = __webpack_require__(27),
+	    COMMAND = _require2.COMMAND,
+	    CLIENT = _require2.CLIENT,
+	    DISCONNECTED = _require2.DISCONNECTED;
 
 	var SocketBase = /*#__PURE__*/function () {
 	  function SocketBase(env, name) {
@@ -548,13 +598,17 @@ var IrrelonSockets =
 
 	    (0, _classCallCheck2["default"])(this, SocketBase);
 	    (0, _defineProperty2["default"])(this, "_socketById", {});
+	    (0, _defineProperty2["default"])(this, "_requestById", {});
+	    (0, _defineProperty2["default"])(this, "_responseCallbackByRequestId", {});
 	    (0, _defineProperty2["default"])(this, "_dictionary", []);
-	    (0, _defineProperty2["default"])(this, "_commandMap", ["ping", "commandMap", "defineCommand", "ready"]);
+	    (0, _defineProperty2["default"])(this, "_commandMap", ["ping", "commandMap", "defineCommand", "ready", "request", "response"]);
 	    (0, _defineProperty2["default"])(this, "_commandEncoding", {
 	      "*": encoders.jsonEncoder,
 	      "commandMap": encoders.stringArrayEncoder,
 	      "defineCommand": encoders.stringArrayEncoder,
-	      "ready": encoders.noDataEncoder
+	      "ready": encoders.noDataEncoder,
+	      "request": encoders.jsonEncoder,
+	      "response": encoders.jsonEncoder
 	    });
 	    (0, _defineProperty2["default"])(this, "_idCounter", 0);
 	    (0, _defineProperty2["default"])(this, "_state", DISCONNECTED);
@@ -600,15 +654,11 @@ var IrrelonSockets =
 	  }, {
 	    key: "log",
 	    value: function log() {
-	      var _console$log;
-
 	      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
 	        args[_key] = arguments[_key];
 	      }
 
-	      args.splice(0, 0, this._name);
-
-	      (_console$log = console.log).call.apply(_console$log, [console].concat(args));
+	      args.splice(0, 0, this._name); //console.log.call(console, ...args);
 	    }
 	  }, {
 	    key: "commandMap",
@@ -637,7 +687,7 @@ var IrrelonSockets =
 	      this._commandMap.push(command);
 
 	      this._commandEncoding[command] = encoder;
-	      console.log("Defined new command \"".concat(command, "\""));
+	      this.log("Defined new command \"".concat(command, "\""));
 	      if (this._env === CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
 
 	      this.sendCommand("defineCommand", [command, encoderName || this.encoderNameByObject(encoder)]);
@@ -667,16 +717,32 @@ var IrrelonSockets =
 	  }, {
 	    key: "sendCommand",
 	    value: function sendCommand(cmd, data, socket) {
-	      if (!socket) return console.log("sendCommand() no socket provided!", cmd, data, socket);
+	      if (!socket) return this.log("sendCommand() no socket provided!", cmd, data, socket);
 	      var commandId = this.defineCommand(cmd);
 	      var message = [commandId, data];
 	      this.log("sendCommand", message);
 	      socket.send(this._encode(cmd, message));
 	    }
 	  }, {
+	    key: "sendRequest",
+	    value: function sendRequest(requestName, requestId, data, socket) {
+	      this.log("sendRequest()", requestName, requestId, data, socket);
+	      if (!socket) return this.log("request() no socket provided!", requestName, requestId, data, socket);
+	      var commandId = this.defineCommand("request");
+	      var message = [commandId, {
+	        "id": requestId,
+	        requestName: requestName,
+	        data: data
+	      }];
+	      this.log("request message payload", message);
+	      socket.send(this._encode("request", message));
+	    }
+	  }, {
 	    key: "_onMessage",
-	    value: function _onMessage(rawMessage) {
-	      console.log("Raw message incoming", rawMessage);
+	    value: function _onMessage(rawMessage, socketId) {
+	      var _this3 = this;
+
+	      this.log("Raw message incoming", rawMessage, "socketId", socketId);
 
 	      var message = this._decode(rawMessage);
 
@@ -694,14 +760,42 @@ var IrrelonSockets =
 	        };
 	      }
 
-	      console.log("Incoming command \"".concat(command, "\" with data"), data);
-	      this.emitId(COMMAND, command, data);
+	      this.log("Incoming command \"".concat(command, "\" with data"), data);
+
+	      if (command === "request") {
+	        if (data.id) {
+	          this._onRequest(data.requestName, data.id, data.data, function (responseData) {
+	            _this3.sendResponse(data.id, responseData);
+	          }, socketId);
+	        } else {
+	          this.log("Request received without a request id!");
+	        }
+	      } else if (command === "response") {
+	        if (data.id) {
+	          this._onResponse(data.id, data.data);
+	        } else {
+	          this.log("Response received without a request id!");
+	        }
+	      } else {
+	        this.emitId(COMMAND, command, data);
+	      }
+
 	      return {
 	        message: message,
 	        commandId: commandId,
 	        command: command,
 	        data: data
 	      };
+	    }
+	  }, {
+	    key: "_onRequest",
+	    value: function _onRequest(requestName, requestId, data, response) {
+	      var socketId = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "";
+	      this.emitId("request", requestName, {
+	        data: data,
+	        response: response,
+	        socketId: socketId
+	      });
 	    }
 	  }, {
 	    key: "_encode",
@@ -1924,6 +2018,27 @@ var IrrelonSockets =
 
 	"use strict";
 
+	var _idCounter = 0;
+	/**
+	 * Generates a new 16-character hexadecimal unique ID
+	 * @return {String} The id.
+	 */
+
+	var hexId = function hexId() {
+	  _idCounter++;
+	  return (_idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	};
+
+	module.exports = {
+	  hexId: hexId
+	};
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
 	var DISCONNECTED = 0;
 	var CONNECTING = 1;
 	var CONNECTED = 2;
@@ -1946,7 +2061,7 @@ var IrrelonSockets =
 	};
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1979,10 +2094,10 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(28),
+	var _require = __webpack_require__(26),
 	    hexId = _require.hexId;
 
-	var _require2 = __webpack_require__(26),
+	var _require2 = __webpack_require__(27),
 	    SERVER = _require2.SERVER,
 	    STARTED = _require2.STARTED,
 	    STOPPED = _require2.STOPPED;
@@ -2005,10 +2120,10 @@ var IrrelonSockets =
 	      _this.log("New client connection with id", socket.id);
 
 	      socket.on("message", function (data) {
-	        _this._onMessageFromClient(socket, data);
+	        _this._onMessageFromClient(data, socket);
 	      });
 	      socket.on("disconnect", function (data) {
-	        _this._onClientDisconnect(socket, data);
+	        _this._onClientDisconnect(data, socket);
 	      }); // Send initial data to the client
 
 	      _this.sendCommand("commandMap", _this._commandMap, socket.id);
@@ -2068,46 +2183,61 @@ var IrrelonSockets =
 	    value: function sendCommand(cmd, data, socketId) {
 	      if (!socketId) return this.broadcastCommand(cmd, data);
 	      var socket = this._socketById[socketId];
-	      if (!socket) return console.log("Socket required to send message!");
+	      if (!socket) return this.log("Socket required to send message!");
 	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "sendCommand", this).call(this, cmd, data, socket);
 	    }
 	  }, {
+	    key: "sendRequest",
+	    value: function sendRequest(requestName, data, callback, socketId) {
+	      var socket = this._socketById[socketId];
+	      if (!socket) return this.log("Socket required to send message!");
+	      var requestId = hexId();
+	      this._requestById[requestId] = socketId;
+	      this._responseCallbackByRequestId[requestId] = callback;
+	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "sendRequest", this).call(this, requestName, requestId, data, socket);
+	    }
+	  }, {
+	    key: "sendResponse",
+	    value: function sendResponse(requestId, responseData) {
+	      // Get socketId from requestId
+	      var socketId = this._requestById[requestId];
+	      this.log("Sending response", "requestId", requestId, responseData, "socketId", socketId);
+	      if (!socketId) return this.log("Request ID not recognised, already replied?");
+	      this.sendCommand("response", {
+	        "id": requestId,
+	        "data": responseData
+	      }, socketId);
+	    }
+	  }, {
 	    key: "_onClientDisconnect",
-	    value: function _onClientDisconnect(socket, data) {
+	    value: function _onClientDisconnect(data, socket) {
 	      this.emitId("clientDisconnect", socket.id, data);
 	      delete this._socketById[socket.id];
 	    }
 	  }, {
 	    key: "_onMessageFromClient",
-	    value: function _onMessageFromClient(socket, rawMessage) {
-	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "_onMessage", this).call(this, rawMessage);
+	    value: function _onMessageFromClient(rawMessage, socket) {
+	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "_onMessage", this).call(this, rawMessage, socket.id);
+	    }
+	  }, {
+	    key: "_onRequest",
+	    value: function _onRequest(requestName, requestId, data, response, socketId) {
+	      this.log("_onRequest requestId", requestId, "socketId", socketId);
+	      this._requestById[requestId] = socketId;
+	      (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketServer.prototype), "_onRequest", this).call(this, requestName, requestId, data, response, socketId);
+	    }
+	  }, {
+	    key: "_onResponse",
+	    value: function _onResponse(requestId, data) {
+	      var responseCallback = this._responseCallbackByRequestId[requestId];
+	      responseCallback(data);
+	      delete this._responseCallbackByRequestId[requestId];
 	    }
 	  }]);
 	  return SocketServer;
 	}(SocketBase);
 
 	module.exports = SocketServer;
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports) {
-
-	"use strict";
-
-	var _idCounter = 0;
-	/**
-	 * Generates a new 16-character hexadecimal unique ID
-	 * @return {String} The id.
-	 */
-
-	var hexId = function hexId() {
-	  _idCounter++;
-	  return (_idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
-	};
-
-	module.exports = {
-	  hexId: hexId
-	};
 
 /***/ })
 /******/ ]);

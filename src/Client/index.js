@@ -1,5 +1,6 @@
 const WebSocket = require("isomorphic-ws");
 const SocketBase = require("../Base");
+const {hexId} = require("../Base/utils");
 const {READY, CONNECTING, CONNECTED, DISCONNECTED, CLIENT, COMMAND} = require("../Base/enums");
 
 class SocketClient extends SocketBase {
@@ -56,7 +57,7 @@ class SocketClient extends SocketBase {
 	}
 
 	sendCommand (cmd, data) {
-		if (this.state() !== CONNECTED) {
+		if (this.state() !== READY) {
 			// Buffer the message and send when connected
 			this._buffer.push({
 				"type": "sendCommand",
@@ -76,11 +77,38 @@ class SocketClient extends SocketBase {
 					this.sendCommand(bufferItem.cmd, bufferItem.data);
 					break;
 
+				case "sendRequest":
+					this.sendRequest(bufferItem.requestName, bufferItem.data, bufferItem.callback);
+					break;
+
 				default:
 					break;
 			}
 		});
+
 		this._buffer = [];
+	}
+
+	sendRequest (requestName, data, callback) {
+		if (this.state() !== READY) {
+			// Buffer the message and send when connected
+			this._buffer.push({
+				"type": "sendRequest",
+				requestName,
+				data,
+				callback
+			});
+			return;
+		}
+
+		const requestId = hexId();
+		this._responseCallbackByRequestId[requestId] = callback;
+
+		super.sendRequest(requestName, requestId, data, this._socket);
+	}
+
+	sendResponse (requestId, responseData) {
+		this.sendCommand("response", {"id": requestId, "data": responseData});
 	}
 
 	_onConnected = () => {
@@ -92,7 +120,7 @@ class SocketClient extends SocketBase {
 	_onUnexpectedDisconnect = () => {
 		this.state(DISCONNECTED);
 
-		console.log("Disconnected from server");
+		this.log("Disconnected from server");
 		this.emit("disconnected");
 
 		setTimeout(() => {
@@ -110,20 +138,31 @@ class SocketClient extends SocketBase {
 	}
 
 	_onCommandMap = (data) => {
-		console.log("_onCommandMap", data);
+		this.log("_onCommandMap", data);
 		this.commandMap(data);
 	}
 
 	_onDefineCommand = (data) => {
-		console.log("_onDefineCommand", data);
+		this.log("_onDefineCommand", data);
 		this.defineCommand(data[0], data[1]);
 	}
 
 	_onReadyCommand = (data) => {
-		console.log("_onReadyCommand", data);
+		this.log("_onReadyCommand", data);
 		this.state(READY);
 		this.emit("ready");
 		this.processBuffer();
+	}
+
+	_onRequest (requestName, requestId, data, response) {
+		super._onRequest(requestName, requestId, data, response, "");
+	}
+
+	_onResponse (requestId, data) {
+		const responseCallback = this._responseCallbackByRequestId[requestId];
+		responseCallback(data);
+
+		delete this._responseCallbackByRequestId[requestId];
 	}
 }
 

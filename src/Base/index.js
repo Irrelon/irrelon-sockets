@@ -1,16 +1,21 @@
 const Emitter = require("@irrelon/emitter");
 const encoders = require("./encoders");
+const {hexId} = require("./utils");
 const {COMMAND, CLIENT, DISCONNECTED} = require("./enums");
 
 class SocketBase {
 	_socketById = {};
+	_requestById = {};
+	_responseCallbackByRequestId = {};
 	_dictionary = [];
-	_commandMap = ["ping", "commandMap", "defineCommand", "ready"];
+	_commandMap = ["ping", "commandMap", "defineCommand", "ready", "request", "response"];
 	_commandEncoding = {
 		"*": encoders.jsonEncoder,
 		"commandMap": encoders.stringArrayEncoder,
 		"defineCommand": encoders.stringArrayEncoder,
-		"ready": encoders.noDataEncoder
+		"ready": encoders.noDataEncoder,
+		"request": encoders.jsonEncoder,
+		"response": encoders.jsonEncoder
 	};
 	_idCounter = 0;
 	_state = DISCONNECTED;
@@ -52,7 +57,7 @@ class SocketBase {
 
 	log (...args) {
 		args.splice(0, 0, this._name);
-		console.log.call(console, ...args);
+		//console.log.call(console, ...args);
 	}
 
 	commandMap (commandMap) {
@@ -79,7 +84,7 @@ class SocketBase {
 		this._commandMap.push(command);
 		this._commandEncoding[command] = encoder;
 
-		console.log(`Defined new command "${command}"`);
+		this.log(`Defined new command "${command}"`);
 
 		if (this._env === CLIENT) return this._commandMap.length - 1;
 
@@ -103,7 +108,7 @@ class SocketBase {
 	}
 
 	sendCommand (cmd, data, socket) {
-		if (!socket) return console.log("sendCommand() no socket provided!", cmd, data, socket);
+		if (!socket) return this.log("sendCommand() no socket provided!", cmd, data, socket);
 
 		const commandId = this.defineCommand(cmd);
 		const message = [commandId, data];
@@ -113,8 +118,20 @@ class SocketBase {
 		socket.send(this._encode(cmd, message));
 	}
 
-	_onMessage (rawMessage) {
-		console.log("Raw message incoming", rawMessage);
+	sendRequest (requestName, requestId, data, socket) {
+		this.log("sendRequest()", requestName, requestId, data, socket);
+		if (!socket) return this.log("request() no socket provided!", requestName, requestId, data, socket);
+
+		const commandId = this.defineCommand("request");
+		const message = [commandId, {"id": requestId, requestName, data}];
+
+		this.log("request message payload", message);
+
+		socket.send(this._encode("request", message));
+	}
+
+	_onMessage (rawMessage, socketId) {
+		this.log("Raw message incoming", rawMessage, "socketId", socketId);
 
 		const message = this._decode(rawMessage);
 		const commandId = message[0];
@@ -131,9 +148,25 @@ class SocketBase {
 			};
 		}
 
-		console.log(`Incoming command "${command}" with data`, data);
+		this.log(`Incoming command "${command}" with data`, data);
 
-		this.emitId(COMMAND, command, data);
+		if (command === "request") {
+			if (data.id) {
+				this._onRequest(data.requestName, data.id, data.data, (responseData) => {
+					this.sendResponse(data.id, responseData);
+				}, socketId);
+			} else {
+				this.log("Request received without a request id!");
+			}
+		} else if (command === "response") {
+			if (data.id) {
+				this._onResponse(data.id, data.data);
+			} else {
+				this.log("Response received without a request id!");
+			}
+		} else {
+			this.emitId(COMMAND, command, data);
+		}
 
 		return {
 			message,
@@ -141,6 +174,10 @@ class SocketBase {
 			command,
 			data
 		};
+	}
+
+	_onRequest (requestName, requestId, data, response, socketId = "") {
+		this.emitId("request", requestName, {data, response, socketId});
 	}
 
 	_encode (command, [commandId, data]) {
