@@ -5,7 +5,7 @@ const {COMMAND, CLIENT, DISCONNECTED} = require("./enums");
 class SocketBase {
 	_socketById = {};
 	_dictionary = [];
-	_commandMap = ["commandMap", "defineCommand"];
+	_commandMap = ["ping", "commandMap", "defineCommand"];
 	_commandEncoding = {
 		"*": encoders.jsonEncoder,
 		"commandMap": encoders.stringArrayEncoder,
@@ -14,12 +14,14 @@ class SocketBase {
 	_idCounter = 0;
 	_state = DISCONNECTED;
 
-	constructor (env) {
+	constructor (env, name) {
+		this._name = name;
 		this._env = env;
 		this.generateDictionary();
 	}
 
 	generateDictionary () {
+		this._dictionary = [];
 		this._commandMap.forEach((command) => {
 			this._dictionary.push(command);
 		});
@@ -51,18 +53,10 @@ class SocketBase {
 		console.log.apply(...args);
 	}
 
-	/**
-	 * Generates a new 16-character hexadecimal unique ID
-	 * @return {String} The id.
-	 */
-	hexId () {
-		this._idCounter++;
-		return (this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
-	}
-
 	commandMap (commandMap) {
 		if (commandMap === undefined) return this._commandMap;
 		this._commandMap = commandMap;
+		this.generateDictionary();
 	}
 
 	defineCommand (command, encoderNameOrObject) {
@@ -82,6 +76,8 @@ class SocketBase {
 		this._dictionary.push(command);
 		this._commandMap.push(command);
 		this._commandEncoding[command] = encoder;
+
+		console.log(`Defined new command "${command}"`);
 
 		if (this._env === CLIENT) return this._commandMap.length - 1;
 
@@ -118,7 +114,7 @@ class SocketBase {
 	_onMessage (rawMessage) {
 		console.log("Raw message incoming", rawMessage);
 
-		const message = this._decode(rawMessage.data);
+		const message = this._decode(rawMessage);
 		const commandId = message[0];
 		const data = message[1];
 		const command = this.commandById(commandId);
@@ -133,7 +129,7 @@ class SocketBase {
 			};
 		}
 
-		console.log(`Emitting command with name ${command} and data`, data);
+		console.log(`Incoming command "${command}" with data`, data);
 		this.emitId(COMMAND, command, data);
 
 		return {

@@ -96,25 +96,58 @@ var IrrelonSockets =
 	var SocketBase = __webpack_require__(16);
 
 	var _require = __webpack_require__(26),
-	    CLIENT = _require.CLIENT,
-	    COMMAND = _require.COMMAND;
+	    CONNECTING = _require.CONNECTING;
+
+	var _require2 = __webpack_require__(26),
+	    CONNECTED = _require2.CONNECTED;
+
+	var _require3 = __webpack_require__(26),
+	    DISCONNECTED = _require3.DISCONNECTED;
+
+	var _require4 = __webpack_require__(26),
+	    CLIENT = _require4.CLIENT,
+	    COMMAND = _require4.COMMAND;
 
 	var SocketClient = /*#__PURE__*/function (_SocketBase) {
 	  (0, _inherits2["default"])(SocketClient, _SocketBase);
 
 	  var _super = _createSuper(SocketClient);
 
-	  function SocketClient() {
+	  function SocketClient(clientName) {
 	    var _thisSuper, _this;
 
 	    (0, _classCallCheck2["default"])(this, SocketClient);
-	    _this = _super.call(this, CLIENT); // Define the default command listeners
+	    _this = _super.call(this, CLIENT, clientName); // Define the default command listeners
 
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_backoff", 1000);
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_buffer", []);
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onConnected", function () {
+	      _this._backoff = 1000;
+
+	      _this.state(CONNECTED);
+
 	      _this.emit("connected");
+
+	      _this.processBuffer();
+	    });
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onUnexpectedDisconnect", function () {
+	      _this.state(DISCONNECTED);
+
+	      console.log("Disconnected from server");
+
+	      _this.emit("disconnected");
+
+	      setTimeout(function () {
+	        _this.reconnect();
+	      }, _this._backoff);
+	    });
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onSocketError", function (err) {
+	      console.error("Error in connection", err);
+
+	      _this.emit("error", err);
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onMessageFromServer", function (rawMessage) {
-	      (0, _get2["default"])((_thisSuper = (0, _assertThisInitialized2["default"])(_this), (0, _getPrototypeOf2["default"])(SocketClient.prototype)), "_onMessage", _thisSuper).call(_thisSuper, rawMessage);
+	      (0, _get2["default"])((_thisSuper = (0, _assertThisInitialized2["default"])(_this), (0, _getPrototypeOf2["default"])(SocketClient.prototype)), "_onMessage", _thisSuper).call(_thisSuper, rawMessage.data);
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onCommandMap", function (data) {
 	      console.log("_onCommandMap", data);
@@ -137,14 +170,79 @@ var IrrelonSockets =
 	  (0, _createClass2["default"])(SocketClient, [{
 	    key: "connect",
 	    value: function connect(host) {
+	      // Check if we are already connected
+	      if (this.state() === CONNECTED) {
+	        return;
+	      }
+
+	      this.state(CONNECTING);
+	      this._host = host;
 	      this._socket = new WebSocket(host);
 	      this._socket.onopen = this._onConnected;
+	      this._socket.onclose = this._onUnexpectedDisconnect;
 	      this._socket.onmessage = this._onMessageFromServer;
+	      this._socket.onerror = this._onSocketError;
+	    }
+	  }, {
+	    key: "reconnect",
+	    value: function reconnect() {
+	      this._backoff = this._backoff * 2;
+
+	      if (this._backoff > 100000) {
+	        // This is essentially a failure
+	        console.warn("Continuous failure to connect to server!");
+	      }
+
+	      this.emit("reconnecting", this._backoff);
+	      this.connect(this._host);
+	    }
+	  }, {
+	    key: "disconnect",
+	    value: function disconnect() {
+	      this.state(DISCONNECTED);
+
+	      try {
+	        this._socket.terminate();
+
+	        delete this._socket;
+	      } catch (err) {
+	        console.error("Error terminating connection", err);
+	      }
 	    }
 	  }, {
 	    key: "sendCommand",
 	    value: function sendCommand(cmd, data) {
+	      if (this.state() !== CONNECTED) {
+	        // Buffer the message and send when connected
+	        this._buffer.push({
+	          "type": "sendCommand",
+	          cmd: cmd,
+	          data: data
+	        });
+
+	        return;
+	      }
+
 	      return (0, _get2["default"])((0, _getPrototypeOf2["default"])(SocketClient.prototype), "sendCommand", this).call(this, cmd, data, this._socket);
+	    }
+	  }, {
+	    key: "processBuffer",
+	    value: function processBuffer() {
+	      var _this2 = this;
+
+	      this._buffer.forEach(function (bufferItem) {
+	        switch (bufferItem.type) {
+	          case "sendCommand":
+	            _this2.sendCommand(bufferItem.cmd, bufferItem.data);
+
+	            break;
+
+	          default:
+	            break;
+	        }
+	      });
+
+	      this._buffer = [];
 	    }
 	  }]);
 	  return SocketClient;
@@ -440,13 +538,13 @@ var IrrelonSockets =
 	    DISCONNECTED = _require.DISCONNECTED;
 
 	var SocketBase = /*#__PURE__*/function () {
-	  function SocketBase(env) {
+	  function SocketBase(env, name) {
 	    var _this = this;
 
 	    (0, _classCallCheck2["default"])(this, SocketBase);
 	    (0, _defineProperty2["default"])(this, "_socketById", {});
 	    (0, _defineProperty2["default"])(this, "_dictionary", []);
-	    (0, _defineProperty2["default"])(this, "_commandMap", ["commandMap", "defineCommand"]);
+	    (0, _defineProperty2["default"])(this, "_commandMap", ["ping", "commandMap", "defineCommand"]);
 	    (0, _defineProperty2["default"])(this, "_commandEncoding", {
 	      "*": encoders.jsonEncoder,
 	      "commandMap": encoders.stringArrayEncoder,
@@ -460,6 +558,7 @@ var IrrelonSockets =
 
 	      _this.emit("state", newState);
 	    });
+	    this._name = name;
 	    this._env = env;
 	    this.generateDictionary();
 	  }
@@ -468,6 +567,8 @@ var IrrelonSockets =
 	    key: "generateDictionary",
 	    value: function generateDictionary() {
 	      var _this2 = this;
+
+	      this._dictionary = [];
 
 	      this._commandMap.forEach(function (command) {
 	        _this2._dictionary.push(command);
@@ -497,22 +598,12 @@ var IrrelonSockets =
 
 	      (_console$log = console.log).apply.apply(_console$log, arguments);
 	    }
-	    /**
-	     * Generates a new 16-character hexadecimal unique ID
-	     * @return {String} The id.
-	     */
-
-	  }, {
-	    key: "hexId",
-	    value: function hexId() {
-	      this._idCounter++;
-	      return (this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
-	    }
 	  }, {
 	    key: "commandMap",
 	    value: function commandMap(_commandMap) {
 	      if (_commandMap === undefined) return this._commandMap;
 	      this._commandMap = _commandMap;
+	      this.generateDictionary();
 	    }
 	  }, {
 	    key: "defineCommand",
@@ -534,6 +625,7 @@ var IrrelonSockets =
 	      this._commandMap.push(command);
 
 	      this._commandEncoding[command] = encoder;
+	      console.log("Defined new command \"".concat(command, "\""));
 	      if (this._env === CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
 
 	      this.sendCommand("defineCommand", [command, encoderName || this.encoderNameByObject(encoder)]);
@@ -574,7 +666,7 @@ var IrrelonSockets =
 	    value: function _onMessage(rawMessage) {
 	      console.log("Raw message incoming", rawMessage);
 
-	      var message = this._decode(rawMessage.data);
+	      var message = this._decode(rawMessage);
 
 	      var commandId = message[0];
 	      var data = message[1];
@@ -590,7 +682,7 @@ var IrrelonSockets =
 	        };
 	      }
 
-	      console.log("Emitting command with name ".concat(command, " and data"), data);
+	      console.log("Incoming command \"".concat(command, "\" with data"), data);
 	      this.emitId(COMMAND, command, data);
 	      return {
 	        message: message,
@@ -1768,10 +1860,20 @@ var IrrelonSockets =
 
 	var jsonEncoder = {
 	  "encode": function encode(data) {
+	    if (data === undefined) return "";
 	    return JSON.stringify(data);
 	  },
 	  "decode": function decode(data) {
-	    return JSON.parse(data);
+	    if (data === undefined || data === null || data === "") return "";
+	    var decoded;
+
+	    try {
+	      decoded = JSON.parse(data);
+	    } catch (err) {
+	      decoded = "";
+	    }
+
+	    return decoded;
 	  }
 	};
 	var stringArrayEncoder = {
@@ -1846,8 +1948,8 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(26),
-	    COMMAND = _require.COMMAND;
+	var _require = __webpack_require__(28),
+	    hexId = _require.hexId;
 
 	var _require2 = __webpack_require__(26),
 	    SERVER = _require2.SERVER,
@@ -1859,13 +1961,13 @@ var IrrelonSockets =
 
 	  var _super = _createSuper(SocketServer);
 
-	  function SocketServer() {
+	  function SocketServer(serverName) {
 	    var _this;
 
 	    (0, _classCallCheck2["default"])(this, SocketServer);
-	    _this = _super.call(this, SERVER);
+	    _this = _super.call(this, SERVER, serverName);
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onClientConnect", function (socket) {
-	      socket.id = _this.hexId();
+	      socket.id = hexId();
 	      _this._socketById[socket.id] = socket;
 	      socket.on("message", function (data) {
 	        _this._onMessageFromClient(socket, data);
@@ -1947,6 +2049,27 @@ var IrrelonSockets =
 	}(SocketBase);
 
 	module.exports = SocketServer;
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	var _this = void 0;
+
+	/**
+	 * Generates a new 16-character hexadecimal unique ID
+	 * @return {String} The id.
+	 */
+	var hexId = function hexId() {
+	  _this._idCounter++;
+	  return (_this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	};
+
+	module.exports = {
+	  hexId: hexId
+	};
 
 /***/ })
 /******/ ]);

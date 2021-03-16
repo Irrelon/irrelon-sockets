@@ -1,11 +1,11 @@
 const WebSocket = require("isomorphic-ws");
 const SocketBase = require("../Base");
-const {COMMAND} = require("../Base/enums");
+const {hexId} = require("../Base/utils");
 const {SERVER, STARTED, STOPPED} = require("../Base/enums");
 
 class SocketServer extends SocketBase {
-	constructor () {
-		super(SERVER);
+	constructor (serverName) {
+		super(SERVER, serverName);
 	}
 
 	start (port = 8080) {
@@ -43,7 +43,7 @@ class SocketServer extends SocketBase {
 	}
 
 	_onClientConnect = (socket) => {
-		socket.id = this.hexId();
+		socket.id = hexId();
 		this._socketById[socket.id] = socket;
 
 		socket.on("message", (data) => {

@@ -1,10 +1,13 @@
 const client = new IrrelonSockets.Client();
 
+client.sendCommand("ping");
+
 client.on("connected", () => {
 	console.log("connected");
 });
 
-client.on("command", "fooBar", () => {
+client.on("command", (...args) => {
+	console.log("COMMAND", args);
 	const elem = document.createElement("div");
 	elem.innerHTML = "Foobar!";
 
