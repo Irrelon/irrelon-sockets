@@ -1,20 +1,18 @@
 const WebSocket = require("isomorphic-ws");
 const SocketBase = require("../Base");
-const {CONNECTING} = require("../Base/enums");
-const {CONNECTED} = require("../Base/enums");
-const {DISCONNECTED} = require("../Base/enums");
-const {CLIENT, COMMAND} = require("../Base/enums");
+const {READY, CONNECTING, CONNECTED, DISCONNECTED, CLIENT, COMMAND} = require("../Base/enums");
 
 class SocketClient extends SocketBase {
 	_backoff = 1000;
 	_buffer = [];
 
-	constructor (clientName) {
+	constructor (clientName = "Client") {
 		super(CLIENT, clientName);
 
 		// Define the default command listeners
 		this.on(COMMAND, "commandMap", this._onCommandMap);
 		this.on(COMMAND, "defineCommand", this._onDefineCommand);
+		this.on(COMMAND, "ready", this._onReadyCommand);
 	}
 
 	connect (host) {
@@ -89,7 +87,6 @@ class SocketClient extends SocketBase {
 		this._backoff = 1000;
 		this.state(CONNECTED);
 		this.emit("connected");
-		this.processBuffer();
 	}
 
 	_onUnexpectedDisconnect = () => {
@@ -120,6 +117,13 @@ class SocketClient extends SocketBase {
 	_onDefineCommand = (data) => {
 		console.log("_onDefineCommand", data);
 		this.defineCommand(data[0], data[1]);
+	}
+
+	_onReadyCommand = (data) => {
+		console.log("_onReadyCommand", data);
+		this.state(READY);
+		this.emit("ready");
+		this.processBuffer();
 	}
 }
 

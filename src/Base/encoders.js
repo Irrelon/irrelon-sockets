@@ -18,15 +18,35 @@ const jsonEncoder = {
 };
 
 const stringArrayEncoder = {
-	"encode": (data) => {
+	"encode": (data = []) => {
 		return data.join(",");
 	},
-	"decode": (data) => {
+	"decode": (data = "") => {
 		return data.split(",");
+	}
+};
+
+const booleanArrayEncoder = {
+	"encode": (data = []) => {
+		return data.join(",");
+	},
+	"decode": (data = "") => {
+		return data.split(",").map((value) => value === "true");
+	}
+};
+
+const noDataEncoder = {
+	"encode": () => {
+		return undefined;
+	},
+	"decode": () => {
+		return undefined;
 	}
 };
 
 module.exports = {
 	jsonEncoder,
-	stringArrayEncoder
+	stringArrayEncoder,
+	booleanArrayEncoder,
+	noDataEncoder
 };

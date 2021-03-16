@@ -5,11 +5,12 @@ const {COMMAND, CLIENT, DISCONNECTED} = require("./enums");
 class SocketBase {
 	_socketById = {};
 	_dictionary = [];
-	_commandMap = ["ping", "commandMap", "defineCommand"];
+	_commandMap = ["ping", "commandMap", "defineCommand", "ready"];
 	_commandEncoding = {
 		"*": encoders.jsonEncoder,
 		"commandMap": encoders.stringArrayEncoder,
-		"defineCommand": encoders.stringArrayEncoder
+		"defineCommand": encoders.stringArrayEncoder,
+		"ready": encoders.noDataEncoder
 	};
 	_idCounter = 0;
 	_state = DISCONNECTED;
@@ -50,7 +51,8 @@ class SocketBase {
 	}
 
 	log (...args) {
-		console.log.apply(...args);
+		args.splice(0, 0, this._name);
+		console.log.call(console, ...args);
 	}
 
 	commandMap (commandMap) {
@@ -106,7 +108,7 @@ class SocketBase {
 		const commandId = this.defineCommand(cmd);
 		const message = [commandId, data];
 
-		console.log("sendCommand", message);
+		this.log("sendCommand", message);
 
 		socket.send(this._encode(cmd, message));
 	}
@@ -130,6 +132,7 @@ class SocketBase {
 		}
 
 		console.log(`Incoming command "${command}" with data`, data);
+
 		this.emitId(COMMAND, command, data);
 
 		return {

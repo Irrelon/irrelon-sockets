@@ -6,6 +6,10 @@ client.on("connected", () => {
 	console.log("connected");
 });
 
+client.on("ready", () => {
+	console.log("ready");
+});
+
 client.on("command", (...args) => {
 	console.log("COMMAND", args);
 	const elem = document.createElement("div");

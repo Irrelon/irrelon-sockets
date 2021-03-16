@@ -96,26 +96,22 @@ var IrrelonSockets =
 	var SocketBase = __webpack_require__(16);
 
 	var _require = __webpack_require__(26),
-	    CONNECTING = _require.CONNECTING;
-
-	var _require2 = __webpack_require__(26),
-	    CONNECTED = _require2.CONNECTED;
-
-	var _require3 = __webpack_require__(26),
-	    DISCONNECTED = _require3.DISCONNECTED;
-
-	var _require4 = __webpack_require__(26),
-	    CLIENT = _require4.CLIENT,
-	    COMMAND = _require4.COMMAND;
+	    READY = _require.READY,
+	    CONNECTING = _require.CONNECTING,
+	    CONNECTED = _require.CONNECTED,
+	    DISCONNECTED = _require.DISCONNECTED,
+	    CLIENT = _require.CLIENT,
+	    COMMAND = _require.COMMAND;
 
 	var SocketClient = /*#__PURE__*/function (_SocketBase) {
 	  (0, _inherits2["default"])(SocketClient, _SocketBase);
 
 	  var _super = _createSuper(SocketClient);
 
-	  function SocketClient(clientName) {
+	  function SocketClient() {
 	    var _thisSuper, _this;
 
+	    var clientName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "Client";
 	    (0, _classCallCheck2["default"])(this, SocketClient);
 	    _this = _super.call(this, CLIENT, clientName); // Define the default command listeners
 
@@ -127,8 +123,6 @@ var IrrelonSockets =
 	      _this.state(CONNECTED);
 
 	      _this.emit("connected");
-
-	      _this.processBuffer();
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onUnexpectedDisconnect", function () {
 	      _this.state(DISCONNECTED);
@@ -159,10 +153,21 @@ var IrrelonSockets =
 
 	      _this.defineCommand(data[0], data[1]);
 	    });
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onReadyCommand", function (data) {
+	      console.log("_onReadyCommand", data);
+
+	      _this.state(READY);
+
+	      _this.emit("ready");
+
+	      _this.processBuffer();
+	    });
 
 	    _this.on(COMMAND, "commandMap", _this._onCommandMap);
 
 	    _this.on(COMMAND, "defineCommand", _this._onDefineCommand);
+
+	    _this.on(COMMAND, "ready", _this._onReadyCommand);
 
 	    return _this;
 	  }
@@ -544,11 +549,12 @@ var IrrelonSockets =
 	    (0, _classCallCheck2["default"])(this, SocketBase);
 	    (0, _defineProperty2["default"])(this, "_socketById", {});
 	    (0, _defineProperty2["default"])(this, "_dictionary", []);
-	    (0, _defineProperty2["default"])(this, "_commandMap", ["ping", "commandMap", "defineCommand"]);
+	    (0, _defineProperty2["default"])(this, "_commandMap", ["ping", "commandMap", "defineCommand", "ready"]);
 	    (0, _defineProperty2["default"])(this, "_commandEncoding", {
 	      "*": encoders.jsonEncoder,
 	      "commandMap": encoders.stringArrayEncoder,
-	      "defineCommand": encoders.stringArrayEncoder
+	      "defineCommand": encoders.stringArrayEncoder,
+	      "ready": encoders.noDataEncoder
 	    });
 	    (0, _defineProperty2["default"])(this, "_idCounter", 0);
 	    (0, _defineProperty2["default"])(this, "_state", DISCONNECTED);
@@ -596,7 +602,13 @@ var IrrelonSockets =
 	    value: function log() {
 	      var _console$log;
 
-	      (_console$log = console.log).apply.apply(_console$log, arguments);
+	      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	      }
+
+	      args.splice(0, 0, this._name);
+
+	      (_console$log = console.log).call.apply(_console$log, [console].concat(args));
 	    }
 	  }, {
 	    key: "commandMap",
@@ -658,7 +670,7 @@ var IrrelonSockets =
 	      if (!socket) return console.log("sendCommand() no socket provided!", cmd, data, socket);
 	      var commandId = this.defineCommand(cmd);
 	      var message = [commandId, data];
-	      console.log("sendCommand", message);
+	      this.log("sendCommand", message);
 	      socket.send(this._encode(cmd, message));
 	    }
 	  }, {
@@ -861,6 +873,10 @@ var IrrelonSockets =
 	 Source: https://github.com/irrelon/emitter
 
 	 Changelog:
+	 	Version 3.1.0:
+	 		Changed order of execution so that listeners that are listening
+	 		against a specific ID get called before the general catch-all
+	 		listeners.
 	 	Version 2.0.11:
 	 		Added cancelStatic method to allow cancelling a static event
 	 	Version 2.0.7:
@@ -909,7 +925,7 @@ var IrrelonSockets =
 	var Overload = __webpack_require__(24);
 
 	var EventMethods = {
-	  on: new Overload({
+	  "on": new Overload({
 	    /**
 	     * Attach an event listener to the passed event.
 	     * @memberof Emitter
@@ -942,12 +958,9 @@ var IrrelonSockets =
 	     * @private
 	     */
 	    "$main": function $main(event, id, listener) {
-	      var self = this,
-	          generateTimeout,
-	          emitter,
-	          i;
+	      var self = this;
 
-	      generateTimeout = function generateTimeout(emitter) {
+	      var generateTimeout = function generateTimeout(emitter) {
 	        setTimeout(function () {
 	          listener.apply(self, emitter.args);
 	        }, 1);
@@ -962,8 +975,8 @@ var IrrelonSockets =
 
 	      if (this._emitters && this._emitters[event] && this._emitters[event].length) {
 	        // Emit events for each emitter
-	        for (i = 0; i < this._emitters[event].length; i++) {
-	          emitter = this._emitters[event];
+	        for (var i = 0; i < this._emitters[event].length; i++) {
+	          var emitter = this._emitters[event];
 
 	          if (id === "*" || emitter.id === id) {
 	            // Call the listener out of process so that any code that expects a listener
@@ -977,7 +990,7 @@ var IrrelonSockets =
 	      return this;
 	    }
 	  }),
-	  once: new Overload({
+	  "once": new Overload({
 	    /**
 	     * Attach an event listener to the passed event which will only fire once.
 	     * @memberof Emitter
@@ -986,9 +999,10 @@ var IrrelonSockets =
 	     * @param {Function} listener The method to call when the event is fired.
 	     */
 	    "string, function": function stringFunction(event, listener) {
-	      var self = this,
-	          fired = false,
-	          internalCallback = function internalCallback() {
+	      var self = this;
+	      var fired = false;
+
+	      var internalCallback = function internalCallback() {
 	        if (!fired) {
 	          fired = true;
 	          self.off(event, internalCallback);
@@ -1009,9 +1023,10 @@ var IrrelonSockets =
 	     * @param {Function} listener The method to call when the event is fired.
 	     */
 	    "string, *, function": function stringFunction(event, id, listener) {
-	      var self = this,
-	          fired = false,
-	          internalCallback = function internalCallback() {
+	      var self = this;
+	      var fired = false;
+
+	      var internalCallback = function internalCallback() {
 	        if (!fired) {
 	          fired = true;
 	          self.off(event, id, internalCallback);
@@ -1022,7 +1037,7 @@ var IrrelonSockets =
 	      return this.on(event, id, internalCallback);
 	    }
 	  }),
-	  one: new Overload({
+	  "one": new Overload({
 	    /**
 	     * Attach an event listener to the passed event which will cancel all
 	     * previous listeners and only fire this newest one.
@@ -1050,7 +1065,7 @@ var IrrelonSockets =
 	      return this.on(event, id, listener);
 	    }
 	  }),
-	  off: new Overload({
+	  "off": new Overload({
 	    /**
 	     * Cancels all event listeners for the passed event.
 	     * @memberof Emitter
@@ -1086,9 +1101,7 @@ var IrrelonSockets =
 	     * @returns {*}
 	     */
 	    "string, function": function stringFunction(event, listener) {
-	      var self = this,
-	          arr,
-	          index;
+	      var self = this;
 
 	      if (this._emitting) {
 	        this._eventRemovalQueue = this._eventRemovalQueue || [];
@@ -1096,19 +1109,17 @@ var IrrelonSockets =
 	        this._eventRemovalQueue.push(function () {
 	          self.off(event, listener);
 	        });
+	      } else if (typeof listener === "string") {
+	        if (this._listeners && this._listeners[event] && this._listeners[event][listener]) {
+	          delete this._listeners[event][listener];
+	        }
 	      } else {
-	        if (typeof listener === "string") {
-	          if (this._listeners && this._listeners[event] && this._listeners[event][listener]) {
-	            delete this._listeners[event][listener];
-	          }
-	        } else {
-	          if (this._listeners && this._listeners[event]) {
-	            arr = this._listeners[event]["*"] || [];
-	            index = arr.indexOf(listener);
+	        if (this._listeners && this._listeners[event]) {
+	          var arr = this._listeners[event]["*"] || [];
+	          var index = arr.indexOf(listener);
 
-	            if (index > -1) {
-	              arr.splice(index, 1);
-	            }
+	          if (index > -1) {
+	            arr.splice(index, 1);
 	          }
 	        }
 	      }
@@ -1162,15 +1173,13 @@ var IrrelonSockets =
 	        this._eventRemovalQueue.push(function () {
 	          self.off(event, id);
 	        });
-	      } else {
-	        if (this._listeners && this._listeners[event] && this._listeners[event][id]) {
-	          // Kill all listeners for this event id
-	          delete this._listeners[event][id];
-	        }
+	      } else if (this._listeners && this._listeners[event] && this._listeners[event][id]) {
+	        // Kill all listeners for this event id
+	        delete this._listeners[event][id];
 	      }
 	    }
 	  }),
-	  emit: new Overload({
+	  "emit": new Overload({
 	    /**
 	     * Emit an event.
 	     * @memberof Emitter
@@ -1209,20 +1218,17 @@ var IrrelonSockets =
 	      this._listeners = this._listeners || {};
 	      this._emitting = true;
 
-	      if (this._listeners[event]) {
-	        var arrIndex, arrCount, tmpFunc, arr; // Handle global emit
+	      if (this._listeners[event] && this._listeners[event][id]) {
+	        // Handle global emit
+	        var arr = this._listeners[event][id];
+	        var arrCount = arr.length;
 
-	        if (this._listeners[event][id]) {
-	          arr = this._listeners[event][id];
-	          arrCount = arr.length;
+	        for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	          // Check we have a function to execute
+	          var tmpFunc = arr[arrIndex];
 
-	          for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	            // Check we have a function to execute
-	            tmpFunc = arr[arrIndex];
-
-	            if (typeof tmpFunc === "function") {
-	              tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
-	            }
+	          if (typeof tmpFunc === "function") {
+	            tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
 	          }
 	        }
 	      }
@@ -1234,7 +1240,7 @@ var IrrelonSockets =
 	      return this;
 	    }
 	  }),
-	  emitId: new Overload({
+	  "emitId": new Overload({
 	    "string": function string(event) {
 	      throw "Missing id from emitId call!";
 	    },
@@ -1250,35 +1256,40 @@ var IrrelonSockets =
 	      this._listeners = this._listeners || {};
 	      this._emitting = true;
 
-	      if (this._listeners[event]) {
-	        var arrIndex, arrCount, tmpFunc, arr; // Handle global emit
+	      if (!this._listeners[event]) {
+	        this._emitting = false;
 
-	        if (this._listeners[event]["*"]) {
-	          arr = this._listeners[event]["*"];
-	          arrCount = arr.length;
+	        this._processRemovalQueue();
 
-	          for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	            // Check we have a function to execute
-	            tmpFunc = arr[arrIndex];
+	        return this;
+	      } // Handle id emit
 
-	            if (typeof tmpFunc === "function") {
-	              tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
-	            }
+
+	      if (this._listeners[event][id]) {
+	        var arr = this._listeners[event][id];
+	        var arrCount = arr.length;
+
+	        for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	          // Check we have a function to execute
+	          var tmpFunc = arr[arrIndex];
+
+	          if (typeof tmpFunc === "function") {
+	            tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
 	          }
-	        } // Handle id emit
+	        }
+	      } // Handle global emit
 
 
-	        if (this._listeners[event][id]) {
-	          arr = this._listeners[event][id];
-	          arrCount = arr.length;
+	      if (this._listeners[event]["*"]) {
+	        var _arr = this._listeners[event]["*"];
+	        var _arrCount = _arr.length;
 
-	          for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	            // Check we have a function to execute
-	            tmpFunc = arr[arrIndex];
+	        for (var _arrIndex = 0; _arrIndex < _arrCount; _arrIndex++) {
+	          // Check we have a function to execute
+	          var _tmpFunc = _arr[_arrIndex];
 
-	            if (typeof tmpFunc === "function") {
-	              tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
-	            }
+	          if (typeof _tmpFunc === "function") {
+	            _tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
 	          }
 	        }
 	      }
@@ -1290,7 +1301,7 @@ var IrrelonSockets =
 	      return this;
 	    }
 	  }),
-	  emitStatic: new Overload({
+	  "emitStatic": new Overload({
 	    /**
 	     * Emit an event that will fire on listeners even when the listener
 	     * is registered AFTER the event has been emitted.
@@ -1331,20 +1342,17 @@ var IrrelonSockets =
 	      this._listeners = this._listeners || {};
 	      this._emitting = true;
 
-	      if (this._listeners[event]) {
-	        var arrIndex, arrCount, tmpFunc, arr; // Handle global emit
+	      if (this._listeners[event] && this._listeners[event][id]) {
+	        // Handle global emit
+	        var arr = this._listeners[event][id];
+	        var arrCount = arr.length;
 
-	        if (this._listeners[event][id]) {
-	          arr = this._listeners[event][id];
-	          arrCount = arr.length;
+	        for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	          // Check we have a function to execute
+	          var tmpFunc = arr[arrIndex];
 
-	          for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	            // Check we have a function to execute
-	            tmpFunc = arr[arrIndex];
-
-	            if (typeof tmpFunc === "function") {
-	              tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
-	            }
+	          if (typeof tmpFunc === "function") {
+	            tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
 	          }
 	        }
 	      }
@@ -1354,8 +1362,8 @@ var IrrelonSockets =
 	      this._emitters[event] = this._emitters[event] || [];
 
 	      this._emitters[event].push({
-	        id: "*",
-	        args: Array.prototype.slice.call(arguments, 1)
+	        "id": "*",
+	        "args": Array.prototype.slice.call(arguments, 1)
 	      });
 
 	      this._processRemovalQueue();
@@ -1363,7 +1371,7 @@ var IrrelonSockets =
 	      return this;
 	    }
 	  }),
-	  emitStaticId: new Overload({
+	  "emitStaticId": new Overload({
 	    /**
 	     * Require an id to emit.
 	     * @memberof Emitter
@@ -1416,33 +1424,32 @@ var IrrelonSockets =
 	      this._emitting = true;
 
 	      if (this._listeners[event]) {
-	        var arrIndex, arrCount, tmpFunc, arr; // Handle global emit
+	        // Handle id emit
+	        if (this._listeners[event][id]) {
+	          var arr = this._listeners[event][id];
+	          var arrCount = arr.length;
 
-	        if (this._listeners[event]["*"]) {
-	          arr = this._listeners[event]["*"];
-	          arrCount = arr.length;
-
-	          for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	          for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 	            // Check we have a function to execute
-	            tmpFunc = arr[arrIndex];
+	            var tmpFunc = arr[arrIndex];
 
 	            if (typeof tmpFunc === "function") {
 	              tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
 	            }
 	          }
-	        } // Handle id emit
+	        } // Handle global emit
 
 
-	        if (this._listeners[event][id]) {
-	          arr = this._listeners[event][id];
-	          arrCount = arr.length;
+	        if (this._listeners[event]["*"]) {
+	          var _arr2 = this._listeners[event]["*"];
+	          var _arrCount2 = _arr2.length;
 
-	          for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	          for (var _arrIndex2 = 0; _arrIndex2 < _arrCount2; _arrIndex2++) {
 	            // Check we have a function to execute
-	            tmpFunc = arr[arrIndex];
+	            var _tmpFunc2 = _arr2[_arrIndex2];
 
-	            if (typeof tmpFunc === "function") {
-	              tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+	            if (typeof _tmpFunc2 === "function") {
+	              _tmpFunc2.apply(this, Array.prototype.slice.call(arguments, 2));
 	            }
 	          }
 	        }
@@ -1454,7 +1461,7 @@ var IrrelonSockets =
 
 	      this._emitters[event].push({
 	        id: id,
-	        args: Array.prototype.slice.call(arguments, 2)
+	        "args": Array.prototype.slice.call(arguments, 2)
 	      });
 
 	      this._processRemovalQueue();
@@ -1462,7 +1469,7 @@ var IrrelonSockets =
 	      return this;
 	    }
 	  }),
-	  cancelStatic: new Overload({
+	  "cancelStatic": new Overload({
 	    /**
 	     * Remove a static event emitter.
 	     * @memberof Emitter
@@ -1496,24 +1503,22 @@ var IrrelonSockets =
 	   * @returns {boolean} True if one or more event listeners are registered for
 	   * the event. False if none are found.
 	   */
-	  willEmit: function willEmit(event) {
+	  "willEmit": function willEmit(event) {
 	    var id = "*";
 
-	    if (this._listeners && this._listeners[event]) {
-	      var arrIndex, arrCount, tmpFunc, arr; // Handle global emit
+	    if (!this._listeners || !this._listeners[event]) {
+	      return false;
+	    }
 
-	      if (this._listeners[event][id]) {
-	        arr = this._listeners[event][id];
-	        arrCount = arr.length;
+	    var arr = this._listeners[event][id];
+	    var arrCount = arr.length;
 
-	        for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	          // Check we have a function to execute
-	          tmpFunc = arr[arrIndex];
+	    for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	      // Check we have a function to execute
+	      var tmpFunc = arr[arrIndex];
 
-	          if (typeof tmpFunc === "function") {
-	            return true;
-	          }
-	        }
+	      if (typeof tmpFunc === "function") {
+	        return true;
 	      }
 	    }
 
@@ -1529,36 +1534,37 @@ var IrrelonSockets =
 	   * @returns {boolean} True if one or more event listeners are registered for
 	   * the event. False if none are found.
 	   */
-	  willEmitId: function willEmitId(event, id) {
-	    if (this._listeners && this._listeners[event]) {
-	      var arrIndex, arrCount, tmpFunc, arr; // Handle global emit
+	  "willEmitId": function willEmitId(event, id) {
+	    if (!this._listeners || !this._listeners[event]) {
+	      return false;
+	    } // Handle id emit
 
-	      if (this._listeners[event]["*"]) {
-	        arr = this._listeners[event]["*"];
-	        arrCount = arr.length;
 
-	        for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	          // Check we have a function to execute
-	          tmpFunc = arr[arrIndex];
+	    if (this._listeners[event][id]) {
+	      var arr = this._listeners[event][id];
+	      var arrCount = arr.length;
 
-	          if (typeof tmpFunc === "function") {
-	            return true;
-	          }
+	      for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	        // Check we have a function to execute
+	        var tmpFunc = arr[arrIndex];
+
+	        if (typeof tmpFunc === "function") {
+	          return true;
 	        }
-	      } // Handle id emit
+	      }
+	    } // Handle global emit
 
 
-	      if (this._listeners[event][id]) {
-	        arr = this._listeners[event][id];
-	        arrCount = arr.length;
+	    if (this._listeners[event]["*"]) {
+	      var _arr3 = this._listeners[event]["*"];
+	      var _arrCount3 = _arr3.length;
 
-	        for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	          // Check we have a function to execute
-	          tmpFunc = arr[arrIndex];
+	      for (var _arrIndex3 = 0; _arrIndex3 < _arrCount3; _arrIndex3++) {
+	        // Check we have a function to execute
+	        var _tmpFunc3 = _arr3[_arrIndex3];
 
-	          if (typeof tmpFunc === "function") {
-	            return true;
-	          }
+	        if (typeof _tmpFunc3 === "function") {
+	          return true;
 	        }
 	      }
 	    }
@@ -1575,18 +1581,18 @@ var IrrelonSockets =
 	   * event emitter is finished processing.
 	   * @private
 	   */
-	  _processRemovalQueue: function _processRemovalQueue() {
-	    var i;
-
-	    if (this._eventRemovalQueue && this._eventRemovalQueue.length) {
-	      // Execute each removal call
-	      for (i = 0; i < this._eventRemovalQueue.length; i++) {
-	        this._eventRemovalQueue[i]();
-	      } // Clear the removal queue
+	  "_processRemovalQueue": function _processRemovalQueue() {
+	    if (!this._eventRemovalQueue || !this._eventRemovalQueue.length) {
+	      return;
+	    } // Execute each removal call
 
 
-	      this._eventRemovalQueue = [];
-	    }
+	    for (var i = 0; i < this._eventRemovalQueue.length; i++) {
+	      this._eventRemovalQueue[i]();
+	    } // Clear the removal queue
+
+
+	    this._eventRemovalQueue = [];
 	  },
 
 	  /**
@@ -1600,12 +1606,11 @@ var IrrelonSockets =
 	   * @param {String} eventName The name of the event to emit.
 	   * @param {*=} data Optional data to emit with the event.
 	   */
-	  deferEmit: function deferEmit(eventName, data) {
-	    var self = this,
-	        args;
+	  "deferEmit": function deferEmit(eventName, data) {
+	    var self = this;
 
 	    if (!this._noEmitDefer && (!this._db || this._db && !this._db._noEmitDefer)) {
-	      args = arguments; // Check for an existing timeout
+	      var args = arguments; // Check for an existing timeout
 
 	      this._deferTimeout = this._deferTimeout || {};
 
@@ -1877,16 +1882,40 @@ var IrrelonSockets =
 	  }
 	};
 	var stringArrayEncoder = {
-	  "encode": function encode(data) {
+	  "encode": function encode() {
+	    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	    return data.join(",");
 	  },
-	  "decode": function decode(data) {
+	  "decode": function decode() {
+	    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
 	    return data.split(",");
+	  }
+	};
+	var booleanArrayEncoder = {
+	  "encode": function encode() {
+	    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	    return data.join(",");
+	  },
+	  "decode": function decode() {
+	    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+	    return data.split(",").map(function (value) {
+	      return value === "true";
+	    });
+	  }
+	};
+	var noDataEncoder = {
+	  "encode": function encode() {
+	    return undefined;
+	  },
+	  "decode": function decode() {
+	    return undefined;
 	  }
 	};
 	module.exports = {
 	  jsonEncoder: jsonEncoder,
-	  stringArrayEncoder: stringArrayEncoder
+	  stringArrayEncoder: stringArrayEncoder,
+	  booleanArrayEncoder: booleanArrayEncoder,
+	  noDataEncoder: noDataEncoder
 	};
 
 /***/ }),
@@ -1898,15 +1927,17 @@ var IrrelonSockets =
 	var DISCONNECTED = 0;
 	var CONNECTING = 1;
 	var CONNECTED = 2;
-	var STARTED = 3;
-	var STOPPED = 4;
-	var CLIENT = 5;
-	var SERVER = 6;
+	var READY = 3;
+	var STARTED = 4;
+	var STOPPED = 5;
+	var CLIENT = 6;
+	var SERVER = 7;
 	var COMMAND = "command";
 	module.exports = {
 	  DISCONNECTED: DISCONNECTED,
 	  CONNECTING: CONNECTING,
 	  CONNECTED: CONNECTED,
+	  READY: READY,
 	  STARTED: STARTED,
 	  STOPPED: STOPPED,
 	  CLIENT: CLIENT,
@@ -1961,14 +1992,18 @@ var IrrelonSockets =
 
 	  var _super = _createSuper(SocketServer);
 
-	  function SocketServer(serverName) {
+	  function SocketServer() {
 	    var _this;
 
+	    var serverName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "Server";
 	    (0, _classCallCheck2["default"])(this, SocketServer);
 	    _this = _super.call(this, SERVER, serverName);
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onClientConnect", function (socket) {
 	      socket.id = hexId();
 	      _this._socketById[socket.id] = socket;
+
+	      _this.log("New client connection with id", socket.id);
+
 	      socket.on("message", function (data) {
 	        _this._onMessageFromClient(socket, data);
 	      });
@@ -1977,6 +2012,8 @@ var IrrelonSockets =
 	      }); // Send initial data to the client
 
 	      _this.sendCommand("commandMap", _this._commandMap, socket.id);
+
+	      _this.sendCommand("ready", "", socket.id);
 
 	      _this.emit("clientConnect", socket.id);
 	    });
@@ -1999,6 +2036,7 @@ var IrrelonSockets =
 
 	      this._socket.on("connection", this._onClientConnect);
 
+	      this.log("Server started");
 	      this.emit("started", {
 	        port: port
 	      });
@@ -2056,15 +2094,15 @@ var IrrelonSockets =
 
 	"use strict";
 
-	var _this = void 0;
-
+	var _idCounter = 0;
 	/**
 	 * Generates a new 16-character hexadecimal unique ID
 	 * @return {String} The id.
 	 */
+
 	var hexId = function hexId() {
-	  _this._idCounter++;
-	  return (_this._idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
+	  _idCounter++;
+	  return (_idCounter + (Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17) + Math.random() * Math.pow(10, 17))).toString(16);
 	};
 
 	module.exports = {

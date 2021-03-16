@@ -4,7 +4,7 @@ const {hexId} = require("../Base/utils");
 const {SERVER, STARTED, STOPPED} = require("../Base/enums");
 
 class SocketServer extends SocketBase {
-	constructor (serverName) {
+	constructor (serverName = "Server") {
 		super(SERVER, serverName);
 	}
 
@@ -17,6 +17,7 @@ class SocketServer extends SocketBase {
 		this._socket = new WebSocket.Server({ port });
 		this._socket.on("connection", this._onClientConnect);
 
+		this.log("Server started");
 		this.emit("started", {port});
 		this.state(STARTED);
 	}
@@ -46,6 +47,8 @@ class SocketServer extends SocketBase {
 		socket.id = hexId();
 		this._socketById[socket.id] = socket;
 
+		this.log("New client connection with id", socket.id);
+
 		socket.on("message", (data) => {
 			this._onMessageFromClient(socket, data);
 		});
@@ -56,6 +59,7 @@ class SocketServer extends SocketBase {
 
 		// Send initial data to the client
 		this.sendCommand("commandMap", this._commandMap, socket.id);
+		this.sendCommand("ready", "", socket.id);
 
 		this.emit("clientConnect", socket.id);
 	}

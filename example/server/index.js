@@ -10,8 +10,6 @@ server.on("stopped", () => {
 	console.log("Stopped");
 });
 
-server.start(9999);
-
 server.on("clientConnect", (clientId) => {
 	console.log("Client connected", clientId);
 	server.defineCommand("fooBar", "jsonEncoder");
