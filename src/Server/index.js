@@ -9,22 +9,22 @@ class SocketServer extends SocketBase {
 	constructor (serverName = "Server") {
 		super(SERVER, serverName);
 
-		this.on("request", "GET", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "GET", ({data, response, clientId}) => {
 			this._httpMethodHandlers.GET = this._httpMethodHandlers.GET || {};
 			this._httpMethodHandlers.GET[data.url]({"body": data, clientId}, {"send": response});
 		});
 
-		this.on("request", "POST", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "POST", ({data, response, clientId}) => {
 			this._httpMethodHandlers.POST = this._httpMethodHandlers.POST || {};
 			this._httpMethodHandlers.POST[data.url]({"body": data, clientId}, {"send": response});
 		});
 
-		this.on("request", "PUT", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "PUT", ({data, response, clientId}) => {
 			this._httpMethodHandlers.PUT = this._httpMethodHandlers.PUT || {};
 			this._httpMethodHandlers.PUT[data.url]({"body": data, clientId}, {"send": response});
 		});
 
-		this.on("request", "DELETE", ({data, response, clientId}) => {
+		this.on(CMD_REQUEST, "DELETE", ({data, response, clientId}) => {
 			this._httpMethodHandlers.DELETE = this._httpMethodHandlers.DELETE || {};
 			this._httpMethodHandlers.DELETE[data.url]({"body": data, clientId}, {"send": response});
 		});
@@ -40,13 +40,13 @@ class SocketServer extends SocketBase {
 		this._socket.on("connection", this._onClientConnect);
 
 		this.log("Server started");
-		this.emit("started", {port});
+		this.emit(EVT_STARTED, {port});
 		this.state(STARTED);
 	}
 
 	stop () {
 		this._socket.close();
-		this.emit("stopped");
+		this.emit(EVT_STOPPED);
 		this.state(STOPPED);
 	}
 
@@ -82,7 +82,7 @@ class SocketServer extends SocketBase {
 		this.log("Sending response", "requestId", requestId, responseData, "socketId", socketId);
 		if (!socketId) return this.log("Request ID not recognised, already replied?");
 
-		this.sendCommand("response", {"id": requestId, "data": responseData}, socketId);
+		this.sendCommand(CMD_RESPONSE, {"id": requestId, "data": responseData}, socketId);
 	}
 
 	GET (url, callback) {
@@ -105,6 +105,10 @@ class SocketServer extends SocketBase {
 		this._httpMethodHandlers.DELETE[url] = callback;
 	}
 
+	send (data, socketId) {
+		this.sendCommand("genericMessage", data, socketId);
+	}
+
 	_onClientConnect = (socket) => {
 		socket.id = hexId();
 		this._socketById[socket.id] = socket;
@@ -121,14 +125,14 @@ class SocketServer extends SocketBase {
 
 
 		// Send initial data to the client
-		this.sendCommand("commandMap", this._commandMap, socket.id);
-		this.sendCommand("ready", "", socket.id);
+		this.sendCommand(CMD_COMMAND_MAP, this._commandMap, socket.id);
+		this.sendCommand(CMD_READY, "", socket.id);
 
-		this.emit("clientConnect", socket.id);
+		this.emit(EVT_CLIENT_CONNECT, socket.id);
 	}
 
 	_onClientDisconnect (data, socket) {
-		this.emitId("clientDisconnect", socket.id, data);
+		this.emitId(EVT_CLIENT_DISCONNECT, socket.id, data);
 		delete this._socketById[socket.id];
 	}
 

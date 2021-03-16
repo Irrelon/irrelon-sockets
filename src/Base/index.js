@@ -7,14 +7,15 @@ class SocketBase {
 	_requestById = {};
 	_responseCallbackByRequestId = {};
 	_dictionary = [];
-	_commandMap = ["ping", "commandMap", "defineCommand", "ready", "request", "response"];
+	_commandMap = [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE];
 	_commandEncoding = {
 		"*": encoders.jsonEncoder,
-		"commandMap": encoders.stringArrayEncoder,
-		"defineCommand": encoders.stringArrayEncoder,
-		"ready": encoders.noDataEncoder,
-		"request": encoders.jsonEncoder,
-		"response": encoders.jsonEncoder
+		"CMD_COMMAND_MAP": encoders.stringArrayEncoder,
+		"CMD_DEFINE_COMMAND": encoders.stringArrayEncoder,
+		"CMD_READY": encoders.noDataEncoder,
+		"CMD_REQUEST": encoders.jsonEncoder,
+		"CMD_RESPONSE": encoders.jsonEncoder,
+		"CMD_MESSAGE": encoders.jsonEncoder
 	};
 	_idCounter = 0;
 	_state = DISCONNECTED;
@@ -51,7 +52,7 @@ class SocketBase {
 		if (newState === undefined) return this._state;
 
 		this._state = newState;
-		this.emit("state", newState);
+		this.emit(EVT_STATE_CHANGE, newState);
 	}
 
 	log (...args) {
@@ -88,7 +89,7 @@ class SocketBase {
 		if (this._env === CLIENT) return this._commandMap.length - 1;
 
 		// Update any connected clients with the new command
-		this.sendCommand("defineCommand", [command, encoderName || this.encoderNameByObject(encoder)]);
+		this.sendCommand(CMD_DEFINE_COMMAND, [command, encoderName || this.encoderNameByObject(encoder)]);
 		return this._commandMap.length - 1;
 	}
 
@@ -121,12 +122,12 @@ class SocketBase {
 		this.log("sendRequest()", requestName, requestId, data, socket);
 		if (!socket) return this.log("request() no socket provided!", requestName, requestId, data, socket);
 
-		const commandId = this.defineCommand("request");
+		const commandId = this.defineCommand(CMD_REQUEST);
 		const message = [commandId, {"id": requestId, requestName, data}];
 
 		this.log("request message payload", message);
 
-		socket.send(this._encode("request", message));
+		socket.send(this._encode(CMD_REQUEST, message));
 	}
 
 	_onMessage (rawMessage, socketId) {
@@ -149,7 +150,7 @@ class SocketBase {
 
 		this.log(`Incoming command "${command}" with data`, data);
 
-		if (command === "request") {
+		if (command === CMD_REQUEST) {
 			if (data.id) {
 				this._onRequest(data.requestName, data.id, data.data, (responseData) => {
 					this.sendResponse(data.id, responseData);
@@ -157,12 +158,14 @@ class SocketBase {
 			} else {
 				this.log("Request received without a request id!");
 			}
-		} else if (command === "response") {
+		} else if (command === CMD_RESPONSE) {
 			if (data.id) {
 				this._onResponse(data.id, data.data);
 			} else {
 				this.log("Response received without a request id!");
 			}
+		} else if (command === CMD_MESSAGE) {
+			this.emit(EVT_MESSAGE, data);
 		} else {
 			this.emitId(COMMAND, command, data);
 		}
@@ -176,7 +179,7 @@ class SocketBase {
 	}
 
 	_onRequest (requestName, requestId, data, response, socketId = "") {
-		this.emitId("request", requestName, {data, response, socketId});
+		this.emitId(CMD_REQUEST, requestName, {data, response, socketId});
 	}
 
 	_encode (command, [commandId, data]) {

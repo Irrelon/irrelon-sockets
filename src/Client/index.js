@@ -11,9 +11,9 @@ class SocketClient extends SocketBase {
 		super(CLIENT, clientName);
 
 		// Define the default command listeners
-		this.on(COMMAND, "commandMap", this._onCommandMap);
-		this.on(COMMAND, "defineCommand", this._onDefineCommand);
-		this.on(COMMAND, "ready", this._onReadyCommand);
+		this.on(COMMAND, CMD_COMMAND_MAP, this._onCommandMap);
+		this.on(COMMAND, CMD_DEFINE_COMMAND, this._onDefineCommand);
+		this.on(COMMAND, CMD_READY, this._onReadyCommand);
 	}
 
 	connect (host) {
@@ -40,7 +40,7 @@ class SocketClient extends SocketBase {
 			console.warn("Continuous failure to connect to server!");
 		}
 
-		this.emit("reconnecting", this._backoff);
+		this.emit(EVT_RECONNECTING, this._backoff);
 
 		this.connect(this._host);
 	}
@@ -108,7 +108,7 @@ class SocketClient extends SocketBase {
 	}
 
 	sendResponse (requestId, responseData) {
-		this.sendCommand("response", {"id": requestId, "data": responseData});
+		this.sendCommand(CMD_RESPONSE, {"id": requestId, "data": responseData});
 	}
 
 	GET (url, data) {
@@ -143,17 +143,21 @@ class SocketClient extends SocketBase {
 		});
 	}
 
+	send (data) {
+		this.sendCommand("genericMessage", data);
+	}
+
 	_onConnected = () => {
 		this._backoff = 1000;
 		this.state(CONNECTED);
-		this.emit("connected");
+		this.emit(EVT_CONNECTED);
 	}
 
 	_onUnexpectedDisconnect = () => {
 		this.state(DISCONNECTED);
 
 		this.log("Disconnected from server");
-		this.emit("disconnected");
+		this.emit(EVT_DISCONNECTED);
 
 		setTimeout(() => {
 			this.reconnect();
@@ -162,7 +166,7 @@ class SocketClient extends SocketBase {
 
 	_onSocketError = (err) => {
 		console.error("Error in connection", err);
-		this.emit("error", err);
+		this.emit(EVT_ERROR, err);
 	}
 
 	_onMessageFromServer = (rawMessage) => {
@@ -182,7 +186,7 @@ class SocketClient extends SocketBase {
 	_onReadyCommand = (data) => {
 		this.log("_onReadyCommand", data);
 		this.state(READY);
-		this.emit("ready");
+		this.emit(CMD_READY);
 		this.processBuffer();
 	}
 
