@@ -183,12 +183,12 @@ class SocketClient extends SocketBase {
 	send (data) {
 		this.sendCommand(CMD_MESSAGE, data);
 	}
-	
+
 	autoReconnect (val) {
-      if (val === undefined) return this._autoReconnect;
-      this._autoReconnect = val;
-      
-      return this;
+		if (val === undefined) return this._autoReconnect;
+		this._autoReconnect = val;
+
+		return this;
 	}
 
 	_onConnected = () => {
@@ -203,11 +203,11 @@ class SocketClient extends SocketBase {
 		this.log("Disconnected from server");
 		this.emit(EVT_DISCONNECTED);
 
-      if (!this._autoReconnect) return;
-      
+		if (!this._autoReconnect) return;
+
 		setTimeout(() => {
 			this.reconnect();
-    	}, this._backoff);
+		}, this._backoff);
 	}
 
 	_onSocketError = (err) => {
