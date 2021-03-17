@@ -2,6 +2,7 @@ const {
 	Server,
 	EVT_STARTED,
 	EVT_STOPPED,
+	EVT_COMMAND,
 	EVT_CLIENT_CONNECTED,
 	CMD_REQUEST,
 	CMD_MESSAGE
@@ -34,6 +35,10 @@ server.on(CMD_REQUEST, "aClientRequest", (data, response, socketId) => {
 	response({
 		"hello": true
 	});
+});
+
+server.on(EVT_COMMAND, "myCommandName", (data, socketId) => {
+	console.log("Command myCommandName", data, socketId);
 });
 
 server.GET("/test", (req, res) => {

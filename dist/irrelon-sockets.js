@@ -56,9 +56,9 @@ var IrrelonSockets =
 
 	var Client = __webpack_require__(2);
 
-	var Server = __webpack_require__(28);
+	var Server = __webpack_require__(27);
 
-	var _require = __webpack_require__(26),
+	var _require = __webpack_require__(25),
 	    STA_DISCONNECTED = _require.STA_DISCONNECTED,
 	    STA_CONNECTING = _require.STA_CONNECTING,
 	    STA_CONNECTED = _require.STA_CONNECTED,
@@ -158,10 +158,10 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(27),
+	var _require = __webpack_require__(26),
 	    hexId = _require.hexId;
 
-	var _require2 = __webpack_require__(26),
+	var _require2 = __webpack_require__(25),
 	    STA_DISCONNECTED = _require2.STA_DISCONNECTED,
 	    STA_CONNECTING = _require2.STA_CONNECTING,
 	    STA_CONNECTED = _require2.STA_CONNECTED,
@@ -733,72 +733,94 @@ var IrrelonSockets =
 
 	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
 
+	var _assertThisInitialized2 = _interopRequireDefault(__webpack_require__(6));
+
+	var _inherits2 = _interopRequireDefault(__webpack_require__(7));
+
+	var _possibleConstructorReturn2 = _interopRequireDefault(__webpack_require__(9));
+
+	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(13));
+
 	var _defineProperty3 = _interopRequireDefault(__webpack_require__(14));
 
-	var Emitter = __webpack_require__(23);
+	function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
-	var encoders = __webpack_require__(25);
+	function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
-	var _require = __webpack_require__(26),
-	    STA_DISCONNECTED = _require.STA_DISCONNECTED,
-	    STA_CONNECTING = _require.STA_CONNECTING,
-	    STA_CONNECTED = _require.STA_CONNECTED,
-	    STA_READY = _require.STA_READY,
-	    STA_STARTED = _require.STA_STARTED,
-	    STA_STOPPED = _require.STA_STOPPED,
-	    ENV_CLIENT = _require.ENV_CLIENT,
-	    ENV_SERVER = _require.ENV_SERVER,
-	    CMD_COMMAND_MAP = _require.CMD_COMMAND_MAP,
-	    CMD_DEFINE_COMMAND = _require.CMD_DEFINE_COMMAND,
-	    CMD_MESSAGE = _require.CMD_MESSAGE,
-	    CMD_PING = _require.CMD_PING,
-	    CMD_READY = _require.CMD_READY,
-	    CMD_REQUEST = _require.CMD_REQUEST,
-	    CMD_RESPONSE = _require.CMD_RESPONSE,
-	    EVT_COMMAND = _require.EVT_COMMAND,
-	    EVT_CONNECTED = _require.EVT_CONNECTED,
-	    EVT_CONNECTING = _require.EVT_CONNECTING,
-	    EVT_DISCONNECTED = _require.EVT_DISCONNECTED,
-	    EVT_MESSAGE = _require.EVT_MESSAGE,
-	    EVT_READY = _require.EVT_READY,
-	    EVT_RECONNECTING = _require.EVT_RECONNECTING,
-	    EVT_STATE_CHANGE = _require.EVT_STATE_CHANGE,
-	    EVT_ERROR = _require.EVT_ERROR,
-	    EVT_STARTED = _require.EVT_STARTED,
-	    EVT_STOPPED = _require.EVT_STOPPED,
-	    EVT_CLIENT_CONNECTED = _require.EVT_CLIENT_CONNECTED,
-	    EVT_CLIENT_DISCONNECTED = _require.EVT_CLIENT_DISCONNECTED;
+	var _require = __webpack_require__(23),
+	    Emitter = _require.Emitter;
 
-	var SocketBase = /*#__PURE__*/function () {
+	var encoders = __webpack_require__(24);
+
+	var _require2 = __webpack_require__(25),
+	    STA_DISCONNECTED = _require2.STA_DISCONNECTED,
+	    STA_CONNECTING = _require2.STA_CONNECTING,
+	    STA_CONNECTED = _require2.STA_CONNECTED,
+	    STA_READY = _require2.STA_READY,
+	    STA_STARTED = _require2.STA_STARTED,
+	    STA_STOPPED = _require2.STA_STOPPED,
+	    ENV_CLIENT = _require2.ENV_CLIENT,
+	    ENV_SERVER = _require2.ENV_SERVER,
+	    CMD_COMMAND_MAP = _require2.CMD_COMMAND_MAP,
+	    CMD_DEFINE_COMMAND = _require2.CMD_DEFINE_COMMAND,
+	    CMD_MESSAGE = _require2.CMD_MESSAGE,
+	    CMD_PING = _require2.CMD_PING,
+	    CMD_READY = _require2.CMD_READY,
+	    CMD_REQUEST = _require2.CMD_REQUEST,
+	    CMD_RESPONSE = _require2.CMD_RESPONSE,
+	    EVT_COMMAND = _require2.EVT_COMMAND,
+	    EVT_CONNECTED = _require2.EVT_CONNECTED,
+	    EVT_CONNECTING = _require2.EVT_CONNECTING,
+	    EVT_DISCONNECTED = _require2.EVT_DISCONNECTED,
+	    EVT_MESSAGE = _require2.EVT_MESSAGE,
+	    EVT_READY = _require2.EVT_READY,
+	    EVT_RECONNECTING = _require2.EVT_RECONNECTING,
+	    EVT_STATE_CHANGE = _require2.EVT_STATE_CHANGE,
+	    EVT_ERROR = _require2.EVT_ERROR,
+	    EVT_STARTED = _require2.EVT_STARTED,
+	    EVT_STOPPED = _require2.EVT_STOPPED,
+	    EVT_CLIENT_CONNECTED = _require2.EVT_CLIENT_CONNECTED,
+	    EVT_CLIENT_DISCONNECTED = _require2.EVT_CLIENT_DISCONNECTED;
+
+	var SocketBase = /*#__PURE__*/function (_Emitter) {
+	  (0, _inherits2["default"])(SocketBase, _Emitter);
+
+	  var _super = _createSuper(SocketBase);
+
 	  /**
 	   * @param {string} env The environment for the SocketBase instance.
 	   * Either ENV_CLIENT or ENV_SERVER.
 	   */
 	  function SocketBase(env, name) {
-	    var _defineProperty2,
-	        _this = this;
+	    var _defineProperty2;
+
+	    var _this;
 
 	    (0, _classCallCheck2["default"])(this, SocketBase);
-	    (0, _defineProperty3["default"])(this, "_socketById", {});
-	    (0, _defineProperty3["default"])(this, "_requestById", {});
-	    (0, _defineProperty3["default"])(this, "_responseCallbackByRequestId", {});
-	    (0, _defineProperty3["default"])(this, "_dictionary", []);
-	    (0, _defineProperty3["default"])(this, "_commandMap", [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE]);
-	    (0, _defineProperty3["default"])(this, "_commandEncoding", (_defineProperty2 = {
+	    _this = _super.call(this);
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_socketById", {});
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_requestById", {});
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_responseCallbackByRequestId", {});
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_dictionary", []);
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_commandMap", [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE]);
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_commandEncoding", (_defineProperty2 = {
 	      "*": encoders.jsonEncoder
 	    }, (0, _defineProperty3["default"])(_defineProperty2, CMD_COMMAND_MAP, encoders.stringArrayEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_DEFINE_COMMAND, encoders.stringArrayEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_READY, encoders.noDataEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_REQUEST, encoders.jsonEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_RESPONSE, encoders.jsonEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_MESSAGE, encoders.jsonEncoder), _defineProperty2));
-	    (0, _defineProperty3["default"])(this, "_state", STA_DISCONNECTED);
-	    (0, _defineProperty3["default"])(this, "state", function (newState) {
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_state", STA_DISCONNECTED);
+	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "state", function (newState) {
 	      if (newState === undefined) return _this._state;
 	      _this._state = newState;
 
 	      _this.emit(EVT_STATE_CHANGE, newState);
 
-	      return _this;
+	      return (0, _assertThisInitialized2["default"])(_this);
 	    });
-	    this._name = name;
-	    this._env = env;
-	    this.generateDictionary();
+	    _this._name = name;
+	    _this._env = env;
+
+	    _this.generateDictionary();
+
+	    return _this;
 	  }
 
 	  (0, _createClass2["default"])(SocketBase, [{
@@ -1004,9 +1026,8 @@ var IrrelonSockets =
 	    }
 	  }]);
 	  return SocketBase;
-	}();
+	}(Emitter);
 
-	Emitter(SocketBase);
 	module.exports = SocketBase;
 
 /***/ }),
@@ -1150,10 +1171,19 @@ var IrrelonSockets =
 	 Source: https://github.com/irrelon/emitter
 
 	 Changelog:
+	 	Version 4.0.1:
+	 		Updated library to use new ES6 functionality making Overload()
+	 		less useful so it can be removed as a dependency.
+	 	Version 4.0.0:
+	 		Breaking change. Library now has named exports `Emitter` and
+	 		`makeEmitter`. `Emitter` is an ES6 class that can be extended
+	 		and `makeEmitter` is a function that takes an object or class
+	 		and does what `Emitter(someObject)` used to do. This change is
+	 		to support being able to extend `Emitter` as a base class.
 	 	Version 3.1.0:
 	 		Changed order of execution so that listeners that are listening
 	 		against a specific ID get called before the general catch-all
-	 		listeners.
+	 		listeners. Renamed package to @irrelon/emitter.
 	 	Version 2.0.11:
 	 		Added cancelStatic method to allow cancelling a static event
 	 	Version 2.0.7:
@@ -1199,298 +1229,269 @@ var IrrelonSockets =
 
 	var _typeof2 = _interopRequireDefault(__webpack_require__(10));
 
-	var Overload = __webpack_require__(24);
+	var _classCallCheck2 = _interopRequireDefault(__webpack_require__(4));
 
-	var EventMethods = {
-	  "on": new Overload({
+	var _createClass2 = _interopRequireDefault(__webpack_require__(5));
+
+	var EventMainMethods = {
+	  /**
+	   * Attach an event listener to the passed event only if the passed
+	   * id matches the document id for the event being fired.
+	   * @memberOf Emitter
+	   * @method on
+	   * @param {String} event The name of the event to listen for.
+	   * @param {*} id The document id to match against.
+	   * @param {Function} listener The method to call when the event is fired.
+	   * @returns {Emitter} The emitter instance.
+	   */
+	  "_on": function _on(event, id, listener) {
+	    var _this = this;
+
+	    var self = this;
+
+	    var generateTimeout = function generateTimeout(emitter) {
+	      setTimeout(function () {
+	        listener.apply(_this, emitter.args);
+	      }, 1);
+	    };
+
+	    this._listeners = this._listeners || {};
+	    this._listeners[event] = this._listeners[event] || {};
+	    this._listeners[event][id] = this._listeners[event][id] || [];
+
+	    this._listeners[event][id].push(listener); // Check for any static emitters, and fire the event if any exist
+
+
+	    if (!this._emitters || !this._emitters[event] || !this._emitters[event].length) return this; // Emit events for each emitter
+
+	    for (var i = 0; i < this._emitters[event].length; i++) {
+	      var emitter = this._emitters[event];
+
+	      if (id === "*" || emitter.id === id) {
+	        // Call the listener out of process so that any code that expects a listener
+	        // to be called at some point in the future rather than immediately on registration
+	        // will not fail
+	        generateTimeout(emitter);
+	      }
+	    }
+
+	    return this;
+	  },
+
+	  /**
+	   * Attach an event listener to the passed event only if the passed
+	   * id matches the document id for the event being fired.
+	   * @memberOf Emitter
+	   * @method once
+	   * @param {String} event The name of the event to listen for.
+	   * @param {*} id The document id to match against.
+	   * @param {Function} listener The method to call when the event is fired.
+	   * @returns {Emitter} The emitter instance.
+	   */
+	  "_once": function _once(event, id, listener) {
+	    var _this2 = this,
+	        _arguments = arguments;
+
+	    var fired = false;
+
+	    var internalCallback = function internalCallback() {
+	      if (fired) return;
+	      fired = true;
+
+	      _this2.off(event, id, internalCallback);
+
+	      listener.apply(_this2, _arguments);
+	    };
+
+	    return this.on(event, id, internalCallback);
+	  },
+
+	  /**
+	   * Cancels an event listener based on an event name, id and listener function.
+	   * @memberOf Emitter
+	   * @method off
+	   * @param {String} event The event to cancel listener for.
+	   * @param {String} id The ID of the event to cancel listening for.
+	   * @param {Function} listener The event listener function used in the on()
+	   * or once() call to cancel.
+	   * @returns {Emitter} The emitter instance.
+	   */
+	  "_off": function _off(event, id, listener) {
+	    var _this3 = this;
+
+	    if (this._emitting) {
+	      this._eventRemovalQueue = this._eventRemovalQueue || [];
+
+	      this._eventRemovalQueue.push(function () {
+	        _this3.off(event, id, listener);
+	      });
+
+	      return this;
+	    }
+
+	    if (!this._listeners || !this._listeners[event] || !this._listeners[event][id]) return this;
+
+	    if (id && !listener) {
+	      if (id === "*") {
+	        delete this._listeners[event];
+	        return this;
+	      } // No listener provided, delete all listeners
+
+
+	      delete this._listeners[event][id];
+	      return this;
+	    }
+
+	    var arr = this._listeners[event][id] || [],
+	        index = arr.indexOf(listener);
+
+	    if (index > -1) {
+	      arr.splice(index, 1);
+	    }
+	  }
+	};
+	/**
+	 * @class Emitter
+	 * @constructor
+	 */
+
+	var Emitter =
+	/*#__PURE__*/
+	function () {
+	  function Emitter() {
+	    (0, _classCallCheck2.default)(this, Emitter);
+	  }
+
+	  (0, _createClass2.default)(Emitter, [{
+	    key: "on",
+
 	    /**
-	     * Attach an event listener to the passed event.
-	     * @memberof Emitter
+	     * Attach an event listener to the passed event only if the passed
+	     * id matches the document id for the event being fired.
+	     * @memberOf Emitter
 	     * @method on
 	     * @param {String} event The name of the event to listen for.
-	     * @param {Function} listener The method to call when the event is fired.
-	     */
-	    "string, function": function stringFunction(event, listener) {
-	      return this.$main(event, "*", listener);
-	    },
-
-	    /**
-	     * Attach an event listener to the passed event only if the passed
-	     * id matches the document id for the event being fired.
-	     * @memberof Emitter
-	     * @method on
-	     * @param {String} event The name of the event to listen for.
 	     * @param {*} id The document id to match against.
 	     * @param {Function} listener The method to call when the event is fired.
+	     * @returns {Emitter} The emitter instance.
 	     */
-	    "string, *, function": function stringFunction(event, id, listener) {
-	      return this.$main(event, id, listener);
-	    },
-
-	    /**
-	     * @param event
-	     * @param id
-	     * @param listener
-	     * @return {$main}
-	     * @private
-	     */
-	    "$main": function $main(event, id, listener) {
-	      var self = this;
-
-	      var generateTimeout = function generateTimeout(emitter) {
-	        setTimeout(function () {
-	          listener.apply(self, emitter.args);
-	        }, 1);
-	      };
-
-	      this._listeners = this._listeners || {};
-	      this._listeners[event] = this._listeners[event] || {};
-	      this._listeners[event][id] = this._listeners[event][id] || [];
-
-	      this._listeners[event][id].push(listener); // Check for any static emitters, and fire the event if any exist
-
-
-	      if (this._emitters && this._emitters[event] && this._emitters[event].length) {
-	        // Emit events for each emitter
-	        for (var i = 0; i < this._emitters[event].length; i++) {
-	          var emitter = this._emitters[event];
-
-	          if (id === "*" || emitter.id === id) {
-	            // Call the listener out of process so that any code that expects a listener
-	            // to be called at some point in the future rather than immediately on registration
-	            // will not fail
-	            generateTimeout(emitter);
-	          }
-	        }
+	    value: function on(event) {
+	      for (var _len = arguments.length, rest = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        rest[_key - 1] = arguments[_key];
 	      }
 
-	      return this;
+	      var restTypes = rest.map(function (arg) {
+	        return (0, _typeof2.default)(arg);
+	      });
+
+	      if (restTypes[0] === "function") {
+	        return EventMainMethods._on.call(this, event, "*", rest[0]);
+	      }
+
+	      return EventMainMethods._on.call(this, event, rest[0], rest[1]);
 	    }
-	  }),
-	  "once": new Overload({
-	    /**
-	     * Attach an event listener to the passed event which will only fire once.
-	     * @memberof Emitter
-	     * @method once
-	     * @param {String} event The name of the event to listen for.
-	     * @param {Function} listener The method to call when the event is fired.
-	     */
-	    "string, function": function stringFunction(event, listener) {
-	      var self = this;
-	      var fired = false;
-
-	      var internalCallback = function internalCallback() {
-	        if (!fired) {
-	          fired = true;
-	          self.off(event, internalCallback);
-	          listener.apply(self, arguments);
-	        }
-	      };
-
-	      return this.on(event, internalCallback);
-	    },
-
 	    /**
 	     * Attach an event listener to the passed event only if the passed
 	     * id matches the document id for the event being fired.
-	     * @memberof Emitter
+	     * @memberOf Emitter
 	     * @method once
 	     * @param {String} event The name of the event to listen for.
 	     * @param {*} id The document id to match against.
 	     * @param {Function} listener The method to call when the event is fired.
+	     * @returns {Emitter} The emitter instance.
 	     */
-	    "string, *, function": function stringFunction(event, id, listener) {
-	      var self = this;
-	      var fired = false;
 
-	      var internalCallback = function internalCallback() {
-	        if (!fired) {
-	          fired = true;
-	          self.off(event, id, internalCallback);
-	          listener.apply(self, arguments);
-	        }
-	      };
+	  }, {
+	    key: "once",
+	    value: function once(event) {
+	      for (var _len2 = arguments.length, rest = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+	        rest[_key2 - 1] = arguments[_key2];
+	      }
 
-	      return this.on(event, id, internalCallback);
+	      var restTypes = rest.map(function (arg) {
+	        return (0, _typeof2.default)(arg);
+	      });
+
+	      if (restTypes[0] === "function") {
+	        return EventMainMethods._once.call(this, event, "*", rest[0]);
+	      }
+
+	      return EventMainMethods._once.call(this, event, rest[0], rest[1]);
 	    }
-	  }),
-	  "one": new Overload({
-	    /**
-	     * Attach an event listener to the passed event which will cancel all
-	     * previous listeners and only fire this newest one.
-	     * @memberof Emitter
-	     * @method one
-	     * @param {String} event The name of the event to listen for.
-	     * @param {Function} listener The method to call when the event is fired.
-	     */
-	    "string, function": function stringFunction(event, listener) {
-	      this.off(event);
-	      return this.on(event, listener);
-	    },
-
 	    /**
 	     * Attach an event listener to the passed event only if the passed
 	     * id matches the document id for the event being fired.
-	     * @memberof Emitter
+	     * @memberOf Emitter
 	     * @method once
 	     * @param {String} event The name of the event to listen for.
 	     * @param {*} id The document id to match against.
 	     * @param {Function} listener The method to call when the event is fired.
+	     * @returns {Emitter} The emitter instance.
 	     */
-	    "string, *, function": function stringFunction(event, id, listener) {
-	      this.off(event, id);
-	      return this.on(event, id, listener);
+
+	  }, {
+	    key: "one",
+	    value: function one(event) {
+	      for (var _len3 = arguments.length, rest = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+	        rest[_key3 - 1] = arguments[_key3];
+	      }
+
+	      var restTypes = rest.map(function (arg) {
+	        return (0, _typeof2.default)(arg);
+	      });
+
+	      if (restTypes[0] === "function") {
+	        this.off(event);
+	        return EventMainMethods._on.call(this, event, "*", rest[0]);
+	      }
+
+	      this.off(event, rest[0]);
+	      return EventMainMethods._on.call(this, event, rest[0], rest[1]);
 	    }
-	  }),
-	  "off": new Overload({
-	    /**
-	     * Cancels all event listeners for the passed event.
-	     * @memberof Emitter
-	     * @method off
-	     * @param {String} event The name of the event.
-	     * @returns {*}
-	     */
-	    "string": function string(event) {
-	      var self = this;
-
-	      if (this._emitting) {
-	        this._eventRemovalQueue = this._eventRemovalQueue || [];
-
-	        this._eventRemovalQueue.push(function () {
-	          self.off(event);
-	        });
-	      } else {
-	        if (this._listeners && this._listeners[event]) {
-	          delete this._listeners[event];
-	        }
-	      }
-
-	      return this;
-	    },
-
-	    /**
-	     * Cancels the event listener for the passed event and listener function.
-	     * @memberof Emitter
-	     * @method off
-	     * @param {String} event The event to cancel listener for.
-	     * @param {Function} listener The event listener function used in the on()
-	     * or once() call to cancel.
-	     * @returns {*}
-	     */
-	    "string, function": function stringFunction(event, listener) {
-	      var self = this;
-
-	      if (this._emitting) {
-	        this._eventRemovalQueue = this._eventRemovalQueue || [];
-
-	        this._eventRemovalQueue.push(function () {
-	          self.off(event, listener);
-	        });
-	      } else if (typeof listener === "string") {
-	        if (this._listeners && this._listeners[event] && this._listeners[event][listener]) {
-	          delete this._listeners[event][listener];
-	        }
-	      } else {
-	        if (this._listeners && this._listeners[event]) {
-	          var arr = this._listeners[event]["*"] || [];
-	          var index = arr.indexOf(listener);
-
-	          if (index > -1) {
-	            arr.splice(index, 1);
-	          }
-	        }
-	      }
-
-	      return this;
-	    },
-
 	    /**
 	     * Cancels an event listener based on an event name, id and listener function.
-	     * @memberof Emitter
+	     * @memberOf Emitter
 	     * @method off
 	     * @param {String} event The event to cancel listener for.
 	     * @param {String} id The ID of the event to cancel listening for.
 	     * @param {Function} listener The event listener function used in the on()
 	     * or once() call to cancel.
+	     * @returns {Emitter} The emitter instance.
 	     */
-	    "string, *, function": function stringFunction(event, id, listener) {
-	      var self = this;
 
-	      if (this._emitting) {
-	        this._eventRemovalQueue = this._eventRemovalQueue || [];
-
-	        this._eventRemovalQueue.push(function () {
-	          self.off(event, id, listener);
-	        });
-	      } else {
-	        if (this._listeners && this._listeners[event] && this._listeners[event][id]) {
-	          var arr = this._listeners[event][id] || [],
-	              index = arr.indexOf(listener);
-
-	          if (index > -1) {
-	            arr.splice(index, 1);
-	          }
-	        }
+	  }, {
+	    key: "off",
+	    value: function off(event) {
+	      for (var _len4 = arguments.length, rest = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+	        rest[_key4 - 1] = arguments[_key4];
 	      }
-	    },
 
-	    /**
-	     * Cancels all listeners for an event based on the passed event name and id.
-	     * @memberof Emitter
-	     * @method off
-	     * @param {String} event The event name to cancel listeners for.
-	     * @param {*} id The ID to cancel all listeners for.
-	     */
-	    "string, *": function string(event, id) {
-	      var self = this;
-
-	      if (this._emitting) {
-	        this._eventRemovalQueue = this._eventRemovalQueue || [];
-
-	        this._eventRemovalQueue.push(function () {
-	          self.off(event, id);
-	        });
-	      } else if (this._listeners && this._listeners[event] && this._listeners[event][id]) {
-	        // Kill all listeners for this event id
-	        delete this._listeners[event][id];
+	      if (rest.length === 0) {
+	        // Only event was provided
+	        return EventMainMethods._off.call(this, event, "*");
 	      }
+
+	      var restTypes = rest.map(function (arg) {
+	        return (0, _typeof2.default)(arg);
+	      });
+
+	      if (restTypes[0] === "function") {
+	        return EventMainMethods._off.call(this, event, "*", rest[0]);
+	      }
+
+	      return EventMainMethods._off.call(this, event, rest[0], rest[1]);
 	    }
-	  }),
-	  "emit": new Overload({
-	    /**
-	     * Emit an event.
-	     * @memberof Emitter
-	     * @method emit
-	     * @param {String} event The event to emit.
-	     * @returns {*}
-	     */
-	    "string": function string(event) {
-	      // Fire global listeners
-	      return this.$main(event);
-	    },
-
-	    /**
-	     * Emit an event with data.
-	     * @memberof Emitter
-	     * @method emit
-	     * @param {String} event The event to emit.
-	     * @param {*} data Data to emit with the event.
-	     * @returns {*}
-	     */
-	    "string, ...": function string(event, data) {
-	      // Fire global listeners first
-	      this.$main.apply(this, arguments);
-	      return this;
-	    },
-
 	    /**
 	     * Handles emitting events, is an internal method not called directly.
 	     * @param {String} event The name of the event to emit.
 	     * @param {*} data The data to emit with the event.
-	     * @returns {*}
+	     * @returns {Emitter} The emitter instance.
 	     * @private
 	     */
-	    "$main": function $main(event, data) {
+
+	  }, {
+	    key: "emit",
+	    value: function emit(event) {
 	      var id = "*";
 	      this._listeners = this._listeners || {};
 	      this._emitting = true;
@@ -1500,12 +1501,16 @@ var IrrelonSockets =
 	        var arr = this._listeners[event][id];
 	        var arrCount = arr.length;
 
+	        for (var _len5 = arguments.length, data = new Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+	          data[_key5 - 1] = arguments[_key5];
+	        }
+
 	        for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
 	          // Check we have a function to execute
 	          var tmpFunc = arr[arrIndex];
 
 	          if (typeof tmpFunc === "function") {
-	            tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
+	            tmpFunc.call.apply(tmpFunc, [this].concat(data));
 	          }
 	        }
 	      }
@@ -1516,20 +1521,9 @@ var IrrelonSockets =
 
 	      return this;
 	    }
-	  }),
-	  "emitId": new Overload({
-	    "string": function string(event) {
-	      throw "Missing id from emitId call!";
-	    },
-	    "string, *": function string(event, id) {
-	      return this.$main(event, id);
-	    },
-	    "string, *, ...": function string(event, id) {
-	      // Fire global listeners first
-	      this.$main.apply(this, arguments);
-	      return this;
-	    },
-	    "$main": function $main(event, id, data) {
+	  }, {
+	    key: "emitId",
+	    value: function emitId(event, id) {
 	      this._listeners = this._listeners || {};
 	      this._emitting = true;
 
@@ -1542,6 +1536,10 @@ var IrrelonSockets =
 	      } // Handle id emit
 
 
+	      for (var _len6 = arguments.length, data = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
+	        data[_key6 - 2] = arguments[_key6];
+	      }
+
 	      if (this._listeners[event][id]) {
 	        var arr = this._listeners[event][id];
 	        var arrCount = arr.length;
@@ -1551,7 +1549,7 @@ var IrrelonSockets =
 	          var tmpFunc = arr[arrIndex];
 
 	          if (typeof tmpFunc === "function") {
-	            tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+	            tmpFunc.call.apply(tmpFunc, [this].concat(data));
 	          }
 	        }
 	      } // Handle global emit
@@ -1566,7 +1564,7 @@ var IrrelonSockets =
 	          var _tmpFunc = _arr[_arrIndex];
 
 	          if (typeof _tmpFunc === "function") {
-	            _tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+	            _tmpFunc.call.apply(_tmpFunc, [this].concat(data));
 	          }
 	        }
 	      }
@@ -1577,44 +1575,21 @@ var IrrelonSockets =
 
 	      return this;
 	    }
-	  }),
-	  "emitStatic": new Overload({
-	    /**
-	     * Emit an event that will fire on listeners even when the listener
-	     * is registered AFTER the event has been emitted.
-	     * @memberof Emitter
-	     * @method emitStatic
-	     * @param {String} event The event to emit.
-	     * @returns {*}
-	     */
-	    "string": function string(event) {
-	      // Fire global listeners
-	      return this.$main(event);
-	    },
-
-	    /**
-	     * Emit an event with data that will fire on listeners even when the listener
-	     * is registered AFTER the event has been emitted.
-	     * @memberof Emitter
-	     * @method emitStatic
-	     * @param {String} event The event to emit.
-	     * @param {*} data Data to emit with the event.
-	     * @returns {*}
-	     */
-	    "string, ...": function string(event, data) {
-	      // Fire global listeners first
-	      this.$main.apply(this, arguments);
-	      return this;
-	    },
-
 	    /**
 	     * Handles emitting events, is an internal method not called directly.
 	     * @param {String} event The name of the event to emit.
 	     * @param {*} data The data to emit with the event.
-	     * @returns {*}
+	     * @returns {Emitter} The emitter instance.
 	     * @private
 	     */
-	    "$main": function $main(event, data) {
+
+	  }, {
+	    key: "emitStatic",
+	    value: function emitStatic(event) {
+	      for (var _len7 = arguments.length, data = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+	        data[_key7 - 1] = arguments[_key7];
+	      }
+
 	      var id = "*";
 	      this._listeners = this._listeners || {};
 	      this._emitting = true;
@@ -1629,7 +1604,7 @@ var IrrelonSockets =
 	          var tmpFunc = arr[arrIndex];
 
 	          if (typeof tmpFunc === "function") {
-	            tmpFunc.apply(this, Array.prototype.slice.call(arguments, 1));
+	            tmpFunc.call.apply(tmpFunc, [this].concat(data));
 	          }
 	        }
 	      }
@@ -1640,63 +1615,30 @@ var IrrelonSockets =
 
 	      this._emitters[event].push({
 	        "id": "*",
-	        "args": Array.prototype.slice.call(arguments, 1)
+	        "args": data
 	      });
 
 	      this._processRemovalQueue();
 
 	      return this;
 	    }
-	  }),
-	  "emitStaticId": new Overload({
-	    /**
-	     * Require an id to emit.
-	     * @memberof Emitter
-	     * @method emitStaticId
-	     * @param event
-	     */
-	    "string": function string(event) {
-	      throw "Missing id from emitId call!";
-	    },
-
-	    /**
-	     * Emit an event that will fire on listeners even when the listener
-	     * is registered AFTER the event has been emitted.
-	     * @memberof Emitter
-	     * @method emitStaticId
-	     * @param {String} event The event to emit.
-	     * @param {String} id The id of the event to emit.
-	     * @returns {*}
-	     */
-	    "string, *": function string(event, id) {
-	      return this.$main(event, id);
-	    },
-
-	    /**
-	     * Emit an event that will fire on listeners even when the listener
-	     * is registered AFTER the event has been emitted.
-	     * @memberof Emitter
-	     * @method emitStaticId
-	     * @param {String} event The event to emit.
-	     * @param {String} id The id of the event to emit.
-	     * @param {*=} data The data to emit with the event.
-	     * @returns {*}
-	     */
-	    "string, *, ...": function string(event, id, data) {
-	      // Fire global listeners first
-	      this.$main.apply(this, arguments);
-	      return this;
-	    },
-
 	    /**
 	     * Handles emitting events, is an internal method not called directly.
 	     * @param {String} event The name of the event to emit.
 	     * @param {String} id The id of the event to emit.
 	     * @param {*} data The data to emit with the event.
-	     * @returns {*}
+	     * @returns {Emitter} The emitter instance.
 	     * @private
 	     */
-	    "$main": function $main(event, id, data) {
+
+	  }, {
+	    key: "emitStaticId",
+	    value: function emitStaticId(event, id) {
+	      for (var _len8 = arguments.length, data = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+	        data[_key8 - 2] = arguments[_key8];
+	      }
+
+	      if (!id) throw new Error("Missing id from emitId call!");
 	      this._listeners = this._listeners || {};
 	      this._emitting = true;
 
@@ -1711,7 +1653,7 @@ var IrrelonSockets =
 	            var tmpFunc = arr[arrIndex];
 
 	            if (typeof tmpFunc === "function") {
-	              tmpFunc.apply(this, Array.prototype.slice.call(arguments, 2));
+	              tmpFunc.call.apply(tmpFunc, [this].concat(data));
 	            }
 	          }
 	        } // Handle global emit
@@ -1726,7 +1668,7 @@ var IrrelonSockets =
 	            var _tmpFunc2 = _arr2[_arrIndex2];
 
 	            if (typeof _tmpFunc2 === "function") {
-	              _tmpFunc2.apply(this, Array.prototype.slice.call(arguments, 2));
+	              _tmpFunc2.call.apply(_tmpFunc2, [this].concat(data));
 	            }
 	          }
 	        }
@@ -1738,86 +1680,45 @@ var IrrelonSockets =
 
 	      this._emitters[event].push({
 	        id: id,
-	        "args": Array.prototype.slice.call(arguments, 2)
+	        "args": data
 	      });
 
 	      this._processRemovalQueue();
 
 	      return this;
 	    }
-	  }),
-	  "cancelStatic": new Overload({
-	    /**
-	     * Remove a static event emitter.
-	     * @memberof Emitter
-	     * @method emitStatic
-	     * @param {String} event The event to remove static emitter for.
-	     * @returns {*}
-	     */
-	    "string": function string(event) {
-	      // Fire global listeners
-	      return this.$main(event);
-	    },
-
 	    /**
 	     * Handles removing emitters, is an internal method not called directly.
 	     * @param {String} event The event to remove static emitter for.
-	     * @returns {*}
+	     * @returns {Emitter} The emitter instance.
 	     * @private
 	     */
-	    "$main": function $main(event) {
+
+	  }, {
+	    key: "cancelStatic",
+	    value: function cancelStatic(event) {
 	      this._emitters = this._emitters || {};
 	      this._emitters[event] = [];
 	      return this;
 	    }
-	  }),
+	    /**
+	     * Checks if an event has any event listeners or not.
+	     * @memberOf Emitter
+	     * @method willEmit
+	     * @param {String} event The name of the event to check for.
+	     * @returns {boolean} True if one or more event listeners are registered for
+	     * the event. False if none are found.
+	     */
 
-	  /**
-	   * Checks if an event has any event listeners or not.
-	   * @memberof Emitter
-	   * @method willEmit
-	   * @param {String} event The name of the event to check for.
-	   * @returns {boolean} True if one or more event listeners are registered for
-	   * the event. False if none are found.
-	   */
-	  "willEmit": function willEmit(event) {
-	    var id = "*";
+	  }, {
+	    key: "willEmit",
+	    value: function willEmit(event) {
+	      var id = "*";
 
-	    if (!this._listeners || !this._listeners[event]) {
-	      return false;
-	    }
-
-	    var arr = this._listeners[event][id];
-	    var arrCount = arr.length;
-
-	    for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
-	      // Check we have a function to execute
-	      var tmpFunc = arr[arrIndex];
-
-	      if (typeof tmpFunc === "function") {
-	        return true;
+	      if (!this._listeners || !this._listeners[event]) {
+	        return false;
 	      }
-	    }
 
-	    return false;
-	  },
-
-	  /**
-	   * Checks if an event has any event listeners or not based on the passed id.
-	   * @memberof Emitter
-	   * @method willEmitId
-	   * @param {String} event The name of the event to check for.
-	   * @param {String} id The event ID to check for.
-	   * @returns {boolean} True if one or more event listeners are registered for
-	   * the event. False if none are found.
-	   */
-	  "willEmitId": function willEmitId(event, id) {
-	    if (!this._listeners || !this._listeners[event]) {
-	      return false;
-	    } // Handle id emit
-
-
-	    if (this._listeners[event][id]) {
 	      var arr = this._listeners[event][id];
 	      var arrCount = arr.length;
 
@@ -1829,97 +1730,146 @@ var IrrelonSockets =
 	          return true;
 	        }
 	      }
-	    } // Handle global emit
+
+	      return false;
+	    }
+	    /**
+	     * Checks if an event has any event listeners or not based on the passed id.
+	     * @memberOf Emitter
+	     * @method willEmitId
+	     * @param {String} event The name of the event to check for.
+	     * @param {String} id The event ID to check for.
+	     * @returns {boolean} True if one or more event listeners are registered for
+	     * the event. False if none are found.
+	     */
+
+	  }, {
+	    key: "willEmitId",
+	    value: function willEmitId(event, id) {
+	      if (!this._listeners || !this._listeners[event]) {
+	        return false;
+	      } // Handle id emit
 
 
-	    if (this._listeners[event]["*"]) {
-	      var _arr3 = this._listeners[event]["*"];
-	      var _arrCount3 = _arr3.length;
+	      if (this._listeners[event][id]) {
+	        var arr = this._listeners[event][id];
+	        var arrCount = arr.length;
 
-	      for (var _arrIndex3 = 0; _arrIndex3 < _arrCount3; _arrIndex3++) {
-	        // Check we have a function to execute
-	        var _tmpFunc3 = _arr3[_arrIndex3];
+	        for (var arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+	          // Check we have a function to execute
+	          var tmpFunc = arr[arrIndex];
 
-	        if (typeof _tmpFunc3 === "function") {
-	          return true;
+	          if (typeof tmpFunc === "function") {
+	            return true;
+	          }
+	        }
+	      } // Handle global emit
+
+
+	      if (this._listeners[event]["*"]) {
+	        var _arr3 = this._listeners[event]["*"];
+	        var _arrCount3 = _arr3.length;
+
+	        for (var _arrIndex3 = 0; _arrIndex3 < _arrCount3; _arrIndex3++) {
+	          // Check we have a function to execute
+	          var _tmpFunc3 = _arr3[_arrIndex3];
+
+	          if (typeof _tmpFunc3 === "function") {
+	            return true;
+	          }
 	        }
 	      }
+
+	      return false;
 	    }
+	    /**
+	     * Queues an event to be fired. This has automatic de-bouncing so that any
+	     * events of the same type that occur within 100 milliseconds of a previous
+	     * one will all be wrapped into a single emit rather than emitting tons of
+	     * events for lots of chained inserts etc. Only the data from the last
+	     * de-bounced event will be emitted.
+	     * @memberOf Emitter
+	     * @method deferEmit
+	     * @param {String} eventName The name of the event to emit.
+	     * @param {*=} data Optional data to emit with the event.
+	     * @returns {Emitter} The emitter instance.
+	     */
 
-	    return false;
-	  },
+	  }, {
+	    key: "deferEmit",
+	    value: function deferEmit(eventName) {
+	      var _this4 = this;
 
-	  /**
-	   * If events are cleared with the off() method while the event emitter is
-	   * actively processing any events then the off() calls get added to a
-	   * queue to be executed after the event emitter is finished. This stops
-	   * errors that might occur by potentially modifying the event queue while
-	   * the emitter is running through them. This method is called after the
-	   * event emitter is finished processing.
-	   * @private
-	   */
-	  "_processRemovalQueue": function _processRemovalQueue() {
-	    if (!this._eventRemovalQueue || !this._eventRemovalQueue.length) {
-	      return;
-	    } // Execute each removal call
+	      for (var _len9 = arguments.length, data = new Array(_len9 > 1 ? _len9 - 1 : 0), _key9 = 1; _key9 < _len9; _key9++) {
+	        data[_key9 - 1] = arguments[_key9];
+	      }
 
+	      if (!this._noEmitDefer && (!this._db || this._db && !this._db._noEmitDefer)) {
+	        // Check for an existing timeout
+	        this._deferTimeout = this._deferTimeout || {};
 
-	    for (var i = 0; i < this._eventRemovalQueue.length; i++) {
-	      this._eventRemovalQueue[i]();
-	    } // Clear the removal queue
-
-
-	    this._eventRemovalQueue = [];
-	  },
-
-	  /**
-	   * Queues an event to be fired. This has automatic de-bouncing so that any
-	   * events of the same type that occur within 100 milliseconds of a previous
-	   * one will all be wrapped into a single emit rather than emitting tons of
-	   * events for lots of chained inserts etc. Only the data from the last
-	   * de-bounced event will be emitted.
-	   * @memberof Emitter
-	   * @method deferEmit
-	   * @param {String} eventName The name of the event to emit.
-	   * @param {*=} data Optional data to emit with the event.
-	   */
-	  "deferEmit": function deferEmit(eventName, data) {
-	    var self = this;
-
-	    if (!this._noEmitDefer && (!this._db || this._db && !this._db._noEmitDefer)) {
-	      var args = arguments; // Check for an existing timeout
-
-	      this._deferTimeout = this._deferTimeout || {};
-
-	      if (this._deferTimeout[eventName]) {
-	        clearTimeout(this._deferTimeout[eventName]);
-	      } // Set a timeout
+	        if (this._deferTimeout[eventName]) {
+	          clearTimeout(this._deferTimeout[eventName]);
+	        } // Set a timeout
 
 
-	      this._deferTimeout[eventName] = setTimeout(function () {
-	        self.emit.apply(self, args);
-	      }, 1);
-	    } else {
-	      this.emit.apply(this, arguments);
+	        this._deferTimeout[eventName] = setTimeout(function () {
+	          var _this4$emit;
+
+	          (_this4$emit = _this4.emit).call.apply(_this4$emit, [_this4, eventName].concat(data));
+	        }, 1);
+	      } else {
+	        var _this$emit;
+
+	        (_this$emit = this.emit).call.apply(_this$emit, [this, eventName].concat(data));
+	      }
+
+	      return this;
 	    }
+	    /**
+	     * If events are cleared with the off() method while the event emitter is
+	     * actively processing any events then the off() calls get added to a
+	     * queue to be executed after the event emitter is finished. This stops
+	     * errors that might occur by potentially modifying the event queue while
+	     * the emitter is running through them. This method is called after the
+	     * event emitter is finished processing.
+	     * @private
+	     */
 
-	    return this;
-	  }
-	};
+	  }, {
+	    key: "_processRemovalQueue",
+	    value: function _processRemovalQueue() {
+	      if (!this._eventRemovalQueue || !this._eventRemovalQueue.length) {
+	        return;
+	      } // Execute each removal call
+
+
+	      for (var i = 0; i < this._eventRemovalQueue.length; i++) {
+	        this._eventRemovalQueue[i]();
+	      } // Clear the removal queue
+
+
+	      this._eventRemovalQueue = [];
+	    }
+	  }]);
+	  return Emitter;
+	}();
 	/**
-	 * @class Emitter
-	 * @param {Object=} obj The object / function / class to add event methods to.
+	 * Makes the passed class or object into an emitter by modifying either the
+	 * prototype or the actual object to include event emitter methods.
+	 * @param {Object} [obj={}] The object / function / class to add event methods to.
 	 * If none is provided a new object will be created. This allows you to use
 	 * new Emitter() to generate an event emitter that is not tied to any other
 	 * object or class.
-	 * @param {Boolean=} prototypeMode Defaults to true. Set to true to add emitter
+	 * @param {Boolean} [prototypeMode=true] Defaults to true. Set to true to add emitter
 	 * methods to the the passed object"s prototype property e.g. obj.prototype.on
 	 * = emitter.on. Set to false to add emitter methods the object directly e.g.
 	 * obj.on = emitter.on.
-	 * @constructor
+	 * @returns {Object} The newly augmented object.
 	 */
 
-	var Emitter = function Emitter(obj, prototypeMode) {
+
+	var makeEmitter = function makeEmitter(obj, prototypeMode) {
 	  var operateOnObject;
 
 	  if (obj === undefined && prototypeMode === undefined) {
@@ -1951,191 +1901,29 @@ var IrrelonSockets =
 	  } // Convert the object prototype to have eventing capability
 
 
-	  operateOnObject.on = EventMethods.on;
-	  operateOnObject.off = EventMethods.off;
-	  operateOnObject.one = EventMethods.one;
-	  operateOnObject.once = EventMethods.once;
-	  operateOnObject.emit = EventMethods.emit;
-	  operateOnObject.emitId = EventMethods.emitId;
-	  operateOnObject.emitStatic = EventMethods.emitStatic;
-	  operateOnObject.emitStaticId = EventMethods.emitStaticId;
-	  operateOnObject.cancelStatic = EventMethods.cancelStatic;
-	  operateOnObject.deferEmit = EventMethods.deferEmit;
-	  operateOnObject.willEmit = EventMethods.willEmit;
-	  operateOnObject.willEmitId = EventMethods.willEmitId;
-	  operateOnObject._processRemovalQueue = EventMethods._processRemovalQueue;
+	  operateOnObject.on = Emitter.prototype.on;
+	  operateOnObject.off = Emitter.prototype.off;
+	  operateOnObject.one = Emitter.prototype.one;
+	  operateOnObject.once = Emitter.prototype.once;
+	  operateOnObject.emit = Emitter.prototype.emit;
+	  operateOnObject.emitId = Emitter.prototype.emitId;
+	  operateOnObject.emitStatic = Emitter.prototype.emitStatic;
+	  operateOnObject.emitStaticId = Emitter.prototype.emitStaticId;
+	  operateOnObject.cancelStatic = Emitter.prototype.cancelStatic;
+	  operateOnObject.deferEmit = Emitter.prototype.deferEmit;
+	  operateOnObject.willEmit = Emitter.prototype.willEmit;
+	  operateOnObject.willEmitId = Emitter.prototype.willEmitId;
+	  operateOnObject._processRemovalQueue = Emitter.prototype._processRemovalQueue;
 	  return obj;
 	};
 
-	Emitter.prototype = EventMethods;
-	module.exports = Emitter;
+	module.exports = {
+	  Emitter: Emitter,
+	  makeEmitter: makeEmitter
+	};
 
 /***/ }),
 /* 24 */
-/***/ (function(module, exports) {
-
-	"use strict";
-
-	/**
-	 * Allows a method to accept overloaded calls with different parameters controlling
-	 * which passed overload function is called.
-	 * @param {Object} def
-	 * @returns {Function}
-	 * @constructor
-	 */
-	var Overload = function (def) {
-		if (def) {
-			var self = this,
-				index,
-				count,
-				tmpDef,
-				defNewKey,
-				sigIndex,
-				signatures;
-
-			if (!(def instanceof Array)) {
-				tmpDef = {};
-
-				// Def is an object, make sure all prop names are devoid of spaces
-				for (index in def) {
-					if (def.hasOwnProperty(index)) {
-						defNewKey = index.replace(/ /g, '');
-
-						// Check if the definition array has a * string in it
-						if (defNewKey.indexOf('*') === -1) {
-							// No * found
-							tmpDef[defNewKey] = def[index];
-						} else {
-							// A * was found, generate the different signatures that this
-							// definition could represent
-							signatures = this.generateSignaturePermutations(defNewKey);
-
-							for (sigIndex = 0; sigIndex < signatures.length; sigIndex++) {
-								if (!tmpDef[signatures[sigIndex]]) {
-									tmpDef[signatures[sigIndex]] = def[index];
-								}
-							}
-						}
-					}
-				}
-
-				def = tmpDef;
-			}
-
-			return function () {
-				var arr = [],
-					lookup,
-					type;
-
-				// Check if we are being passed a key/function object or an array of functions
-				if (def instanceof Array) {
-					// We were passed an array of functions
-					count = def.length;
-					for (index = 0; index < count; index++) {
-						if (def[index].length === arguments.length) {
-							return self.callExtend(this, '$main', def, def[index], arguments);
-						}
-					}
-				} else {
-					// Generate lookup key from arguments
-					// Copy arguments to an array
-					for (index = 0; index < arguments.length; index++) {
-						type = typeof arguments[index];
-
-						// Handle detecting arrays
-						if (type === 'object' && arguments[index] instanceof Array) {
-							type = 'array';
-						}
-
-						// Handle been presented with a single undefined argument
-						if (arguments.length === 1 && type === 'undefined') {
-							break;
-						}
-
-						// Add the type to the argument types array
-						arr.push(type);
-					}
-
-					lookup = arr.join(',');
-
-					// Check for an exact lookup match
-					if (def[lookup]) {
-						return self.callExtend(this, '$main', def, def[lookup], arguments);
-					} else {
-						for (index = arr.length; index >= 0; index--) {
-							// Get the closest match
-							lookup = arr.slice(0, index).join(',');
-
-							if (def[lookup + ',...']) {
-								// Matched against arguments + "any other"
-								return self.callExtend(this, '$main', def, def[lookup + ',...'], arguments);
-							}
-						}
-					}
-				}
-
-				throw('Irrelon Overload: Overloaded method does not have a matching signature for the passed arguments: ' + JSON.stringify(arr));
-			};
-		}
-
-		return function () {};
-	};
-
-	/**
-	 * Generates an array of all the different definition signatures that can be
-	 * created from the passed string with a catch-all wildcard *. E.g. it will
-	 * convert the signature: string,*,string to all potentials:
-	 * string,string,string
-	 * string,number,string
-	 * string,object,string,
-	 * string,function,string,
-	 * string,undefined,string
-	 *
-	 * @param {String} str Signature string with a wildcard in it.
-	 * @returns {Array} An array of signature strings that are generated.
-	 */
-	Overload.prototype.generateSignaturePermutations = function (str) {
-		var signatures = [],
-			newSignature,
-			types = ['string', 'object', 'number', 'function', 'undefined'],
-			index;
-
-		if (str.indexOf('*') > -1) {
-			// There is at least one "any" type, break out into multiple keys
-			// We could do this at query time with regular expressions but
-			// would be significantly slower
-			for (index = 0; index < types.length; index++) {
-				newSignature = str.replace('*', types[index]);
-				signatures = signatures.concat(this.generateSignaturePermutations(newSignature));
-			}
-		} else {
-			signatures.push(str);
-		}
-
-		return signatures;
-	};
-
-	Overload.prototype.callExtend = function (context, prop, propContext, func, args) {
-		var tmp,
-			ret;
-
-		if (context && propContext[prop]) {
-			tmp = context[prop];
-
-			context[prop] = propContext[prop];
-			ret = func.apply(context, args);
-			context[prop] = tmp;
-
-			return ret;
-		} else {
-			return func.apply(context, args);
-		}
-	};
-
-	module.exports = Overload;
-
-/***/ }),
-/* 25 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2196,7 +1984,7 @@ var IrrelonSockets =
 	};
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2265,7 +2053,7 @@ var IrrelonSockets =
 	};
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2286,7 +2074,7 @@ var IrrelonSockets =
 	};
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2319,10 +2107,10 @@ var IrrelonSockets =
 
 	var SocketBase = __webpack_require__(16);
 
-	var _require = __webpack_require__(27),
+	var _require = __webpack_require__(26),
 	    hexId = _require.hexId;
 
-	var _require2 = __webpack_require__(26),
+	var _require2 = __webpack_require__(25),
 	    STA_DISCONNECTED = _require2.STA_DISCONNECTED,
 	    STA_CONNECTING = _require2.STA_CONNECTING,
 	    STA_CONNECTED = _require2.STA_CONNECTED,

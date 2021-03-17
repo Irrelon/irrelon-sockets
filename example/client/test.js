@@ -30,4 +30,6 @@ client.on(CMD_MESSAGE, (data) => {
 	console.log("Message", data);
 });
 
+client.sendCommand("myCommandName", {"foo": true});
+
 client.connect("ws://localhost:9999");

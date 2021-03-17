@@ -1,4 +1,4 @@
-const Emitter = require("@irrelon/emitter");
+const {Emitter} = require("@irrelon/emitter");
 const encoders = require("./encoders");
 const {
 	// States
@@ -38,7 +38,7 @@ const {
 	EVT_CLIENT_DISCONNECTED
 } = require("./enums");
 
-class SocketBase {
+class SocketBase extends Emitter {
 	_socketById = {};
 	_requestById = {};
 	_responseCallbackByRequestId = {};
@@ -60,6 +60,7 @@ class SocketBase {
 	 * Either ENV_CLIENT or ENV_SERVER.
 	 */
 	constructor (env, name) {
+		super();
 		this._name = name;
 		this._env = env;
 		this.generateDictionary();
@@ -247,7 +248,5 @@ class SocketBase {
 		return [parts[0], encoding.decode(parts[1])];
 	}
 }
-
-Emitter(SocketBase);
 
 module.exports = SocketBase;
