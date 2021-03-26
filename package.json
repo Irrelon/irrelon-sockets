@@ -1,5 +1,5 @@
 {
-	"name": "irrelon-sockets",
+	"name": "@irrelon/sockets",
 	"version": "0.0.1",
 	"description": "",
 	"module": "dist/built/index.js",
