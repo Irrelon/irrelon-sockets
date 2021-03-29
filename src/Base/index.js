@@ -54,6 +54,7 @@ class SocketBase extends Emitter {
 		[CMD_MESSAGE]: encoders.jsonEncoder
 	};
 	_state = STA_DISCONNECTED;
+	_logging = false;
 
 	/**
 	 * @param {string} env The environment for the SocketBase instance.
@@ -93,6 +94,7 @@ class SocketBase extends Emitter {
 	 * @param {string} [newState] Optional. If provided, sets the current
 	 * instance state to the passed state value. If not provided the function
 	 * operates as a getter and the current state is returned instead.
+	 * @returns {SocketBase|String} State or self.
 	 */
 	state = (newState) => {
 		if (newState === undefined) return this._state;
@@ -102,18 +104,53 @@ class SocketBase extends Emitter {
 		return this;
 	}
 
-	log (...args) {
-		args.splice(0, 0, this._name);
-		//console.log.call(console, ...args);
+	/**
+	 * Enables logging output to the console.
+	 * @returns {undefined}
+	 */
+	enableLogging () {
+		this._logging = true;
 	}
 
+	/**
+	 * Disables logging output to the console.
+	 * @returns {undefined}
+	 */
+	disableLogging () {
+		this._logging = false;
+	}
+
+	log (...args) {
+		if (this._logging !== true) return;
+
+		args.splice(0, 0, this._name);
+		console.log.call(console, ...args);
+	}
+
+	/**
+	 * Gets or sets the command map.
+	 * @param {Array<String>} [commandMap] Optional. If passed, sets
+	 * the passed array as the new command map.
+	 * @returns {Array<String>|SocketBase} Either the existing map
+	 * or self.
+	 */
 	commandMap (commandMap) {
 		if (commandMap === undefined) return this._commandMap;
 		this._commandMap = commandMap;
 		this.generateDictionary();
+
+		return this;
 	}
 
-	defineCommand (command, encoderNameOrObject) {
+	/**
+	 * Defines a command and the encoder to use.
+	 * @param {String} command The name of the command to define.
+	 * @param {String|Object} encoderNameOrObject Either the name
+	 * of the encoder or an object containing `encode()` and
+	 * `decode()` functions.
+	 * @returns {Number} The id of the command.
+	 */
+	defineCommand (command, encoderNameOrObject = "jsonEncoder") {
 		let encoderName;
 		let encoder;
 
@@ -140,12 +177,23 @@ class SocketBase extends Emitter {
 		return this._commandMap.length - 1;
 	}
 
+	/**
+	 * Gets an encoder name by it's object.
+	 * @param {Object} obj The encoder object.
+	 * @returns {String} The name of the encoder or a blank
+	 * string if not found.
+	 */
 	encoderNameByObject (obj) {
 		return Object.entries(encoders).reduce((name, [key, encoder]) => {
 			return encoder === obj ? key : "";
 		}, "");
 	}
 
+	/**
+	 * Returns the command name from the passed command id.
+	 * @param {Number} id The id of the commmand to find.
+	 * @returns {String} The name of the command.
+	 */
 	commandById (id) {
 		return this._commandMap[id];
 	}
@@ -154,6 +202,13 @@ class SocketBase extends Emitter {
 		return this._commandMap.indexOf(command);
 	}
 
+	/**
+	 * Sends a command to the specified socket.
+	 * @param {String} cmd The command to send.
+	 * @param {*} data The data to send.
+	 * @param {*} socket The socket to send to.
+	 * @returns {undefined} Nothing.
+	 */
 	sendCommand (cmd, data, socket) {
 		if (!socket) return this.log("sendCommand() no socket provided!", cmd, data, socket);
 
