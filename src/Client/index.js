@@ -221,7 +221,17 @@ class SocketClient extends SocketBase {
 
 	_onCommandMap = (data) => {
 		this.log("_onCommandMap", data);
-		this.commandMap(data);
+		const commands = [];
+
+		data.forEach((item) => {
+			commands.push(item[0]);
+		});
+
+		this.commandMap(commands);
+
+		data.forEach((item) => {
+			this.setCommandEncoding(item[0], item[1]);
+		});
 	}
 
 	_onDefineCommand = (data) => {

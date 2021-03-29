@@ -5,8 +5,8 @@ const STA_READY = 3;
 const STA_STARTED = 4;
 const STA_STOPPED = 5;
 
-const ENV_CLIENT = 1;
-const ENV_SERVER = 2;
+const ENV_CLIENT = "1";
+const ENV_SERVER = "2";
 
 const CMD_PING = "ping";
 const CMD_COMMAND_MAP = "commandMap";

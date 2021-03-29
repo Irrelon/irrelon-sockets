@@ -236,7 +236,16 @@ var IrrelonSockets =
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onCommandMap", function (data) {
 	      _this.log("_onCommandMap", data);
 
-	      _this.commandMap(data);
+	      var commands = [];
+	      data.forEach(function (item) {
+	        commands.push(item[0]);
+	      });
+
+	      _this.commandMap(commands);
+
+	      data.forEach(function (item) {
+	        _this.setCommandEncoding(item[0], item[1]);
+	      });
 	    });
 	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_onDefineCommand", function (data) {
 	      _this.log("_onDefineCommand", data);
@@ -741,7 +750,7 @@ var IrrelonSockets =
 
 	var _getPrototypeOf2 = _interopRequireDefault(__webpack_require__(13));
 
-	var _defineProperty3 = _interopRequireDefault(__webpack_require__(14));
+	var _defineProperty2 = _interopRequireDefault(__webpack_require__(14));
 
 	function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
@@ -792,22 +801,21 @@ var IrrelonSockets =
 	   * Either ENV_CLIENT or ENV_SERVER.
 	   */
 	  function SocketBase(env, name) {
-	    var _defineProperty2;
-
 	    var _this;
 
 	    (0, _classCallCheck2["default"])(this, SocketBase);
 	    _this = _super.call(this);
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_socketById", {});
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_requestById", {});
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_responseCallbackByRequestId", {});
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_dictionary", []);
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_commandMap", [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE]);
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_commandEncoding", (_defineProperty2 = {
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_socketById", {});
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_requestById", {});
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_responseCallbackByRequestId", {});
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_dictionary", []);
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_commandMap", []);
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_commandEncoding", {
 	      "*": encoders.jsonEncoder
-	    }, (0, _defineProperty3["default"])(_defineProperty2, CMD_COMMAND_MAP, encoders.stringArrayEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_DEFINE_COMMAND, encoders.stringArrayEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_READY, encoders.noDataEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_REQUEST, encoders.jsonEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_RESPONSE, encoders.jsonEncoder), (0, _defineProperty3["default"])(_defineProperty2, CMD_MESSAGE, encoders.jsonEncoder), _defineProperty2));
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_state", STA_DISCONNECTED);
-	    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "state", function (newState) {
+	    });
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_state", STA_DISCONNECTED);
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "_logging", false);
+	    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "state", function (newState) {
 	      if (newState === undefined) return _this._state;
 	      _this._state = newState;
 
@@ -817,6 +825,20 @@ var IrrelonSockets =
 	    });
 	    _this._name = name;
 	    _this._env = env;
+
+	    _this.defineCommand(CMD_PING, "noDataEncoder");
+
+	    _this.defineCommand(CMD_COMMAND_MAP, "jsonEncoder");
+
+	    _this.defineCommand(CMD_DEFINE_COMMAND, "stringArrayEncoder");
+
+	    _this.defineCommand(CMD_READY, "noDataEncoder");
+
+	    _this.defineCommand(CMD_REQUEST, "jsonEncoder");
+
+	    _this.defineCommand(CMD_RESPONSE, "jsonEncoder");
+
+	    _this.defineCommand(CMD_MESSAGE, "noDataEncoder");
 
 	    _this.generateDictionary();
 
@@ -856,27 +878,73 @@ var IrrelonSockets =
 	     * @param {string} [newState] Optional. If provided, sets the current
 	     * instance state to the passed state value. If not provided the function
 	     * operates as a getter and the current state is returned instead.
+	     * @returns {SocketBase|String} State or self.
 	     */
 
 	  }, {
+	    key: "enableLogging",
+	    value:
+	    /**
+	     * Enables logging output to the console.
+	     * @returns {undefined}
+	     */
+	    function enableLogging() {
+	      this._logging = true;
+	    }
+	    /**
+	     * Disables logging output to the console.
+	     * @returns {undefined}
+	     */
+
+	  }, {
+	    key: "disableLogging",
+	    value: function disableLogging() {
+	      this._logging = false;
+	    }
+	  }, {
 	    key: "log",
 	    value: function log() {
+	      var _console$log;
+
+	      if (this._logging !== true) return;
+
 	      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
 	        args[_key] = arguments[_key];
 	      }
 
-	      args.splice(0, 0, this._name); //console.log.call(console, ...args);
+	      args.splice(0, 0, this._name);
+
+	      (_console$log = console.log).call.apply(_console$log, [console].concat(args));
 	    }
+	    /**
+	     * Gets or sets the command map.
+	     * @param {Array<String>} [commandMap] Optional. If passed, sets
+	     * the passed array as the new command map.
+	     * @returns {Array<String>|SocketBase} Either the existing map
+	     * or self.
+	     */
+
 	  }, {
 	    key: "commandMap",
 	    value: function commandMap(_commandMap) {
 	      if (_commandMap === undefined) return this._commandMap;
 	      this._commandMap = _commandMap;
 	      this.generateDictionary();
+	      return this;
 	    }
+	    /**
+	     * Defines a command and the encoder to use.
+	     * @param {String} command The name of the command to define.
+	     * @param {String|Object} encoderNameOrObject Either the name
+	     * of the encoder or an object containing `encode()` and
+	     * `decode()` functions.
+	     * @returns {Number} The id of the command.
+	     */
+
 	  }, {
 	    key: "defineCommand",
-	    value: function defineCommand(command, encoderNameOrObject) {
+	    value: function defineCommand(command) {
+	      var encoderNameOrObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "jsonEncoder";
 	      var encoderName;
 	      var encoder;
 	      var existingCommandId = this.idByCommand(command);
@@ -886,20 +954,36 @@ var IrrelonSockets =
 	        // Map to an encoder object
 	        encoderName = encoderNameOrObject;
 	        encoder = encoders[encoderNameOrObject];
-	      } // Add the new command
+	      }
 
+	      this.log("New command defined", command, encoderName); // Add the new command
 
 	      this._dictionary.push(command);
 
 	      this._commandMap.push(command);
 
-	      this._commandEncoding[command] = encoder;
+	      this.setCommandEncoding(command, encoder);
 	      this.log("Defined new command \"".concat(command, "\""));
 	      if (this._env === ENV_CLIENT) return this._commandMap.length - 1; // Update any connected clients with the new command
 
-	      this.sendCommand(CMD_DEFINE_COMMAND, [command, encoderName || this.encoderNameByObject(encoder)]);
+	      this.broadcastCommand(CMD_DEFINE_COMMAND, [command, encoder.name]);
 	      return this._commandMap.length - 1;
 	    }
+	  }, {
+	    key: "setCommandEncoding",
+	    value: function setCommandEncoding() {
+	      var command = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+	      var encoderNameOrObj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "jsonEncoder";
+	      if (!command || !encoderNameOrObj) return;
+	      this._commandEncoding[command] = this.resolveEncoder(encoderNameOrObj);
+	    }
+	    /**
+	     * Gets an encoder name by it's object.
+	     * @param {Object} obj The encoder object.
+	     * @returns {String} The name of the encoder or a blank
+	     * string if not found.
+	     */
+
 	  }, {
 	    key: "encoderNameByObject",
 	    value: function encoderNameByObject(obj) {
@@ -912,6 +996,21 @@ var IrrelonSockets =
 	      }, "");
 	    }
 	  }, {
+	    key: "resolveEncoder",
+	    value: function resolveEncoder(encoder) {
+	      if (typeof encoder === "string") {
+	        return encoders[encoder];
+	      }
+
+	      return encoder;
+	    }
+	    /**
+	     * Returns the command name from the passed command id.
+	     * @param {Number} id The id of the commmand to find.
+	     * @returns {String} The name of the command.
+	     */
+
+	  }, {
 	    key: "commandById",
 	    value: function commandById(id) {
 	      return this._commandMap[id];
@@ -921,6 +1020,14 @@ var IrrelonSockets =
 	    value: function idByCommand(command) {
 	      return this._commandMap.indexOf(command);
 	    }
+	    /**
+	     * Sends a command to the specified socket.
+	     * @param {String} cmd The command to send.
+	     * @param {*} data The data to send.
+	     * @param {*} socket The socket to send to.
+	     * @returns {undefined} Nothing.
+	     */
+
 	  }, {
 	    key: "sendCommand",
 	    value: function sendCommand(cmd, data, socket) {
@@ -1929,6 +2036,7 @@ var IrrelonSockets =
 	"use strict";
 
 	var jsonEncoder = {
+	  "name": "jsonEncoder",
 	  "encode": function encode(data) {
 	    if (data === undefined) return "";
 	    return JSON.stringify(data);
@@ -1947,6 +2055,7 @@ var IrrelonSockets =
 	  }
 	};
 	var stringArrayEncoder = {
+	  "name": "stringArrayEncoder",
 	  "encode": function encode() {
 	    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	    return data.join(",");
@@ -1957,6 +2066,7 @@ var IrrelonSockets =
 	  }
 	};
 	var booleanArrayEncoder = {
+	  "name": "booleanArrayEncoder",
 	  "encode": function encode() {
 	    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	    return data.join(",");
@@ -1969,6 +2079,7 @@ var IrrelonSockets =
 	  }
 	};
 	var noDataEncoder = {
+	  "name": "noDataEncoder",
 	  "encode": function encode() {
 	    return undefined;
 	  },
@@ -1995,8 +2106,8 @@ var IrrelonSockets =
 	var STA_READY = 3;
 	var STA_STARTED = 4;
 	var STA_STOPPED = 5;
-	var ENV_CLIENT = 1;
-	var ENV_SERVER = 2;
+	var ENV_CLIENT = "1";
+	var ENV_SERVER = "2";
 	var CMD_PING = "ping";
 	var CMD_COMMAND_MAP = "commandMap";
 	var CMD_DEFINE_COMMAND = "defineCommand";
@@ -2168,7 +2279,9 @@ var IrrelonSockets =
 	        _this._onClientDisconnect(data, socket);
 	      }); // Send initial data to the client
 
-	      _this.sendCommand(CMD_COMMAND_MAP, _this._commandMap, socket.id);
+	      _this.sendCommand(CMD_COMMAND_MAP, _this._commandMap.map(function (command) {
+	        return [command, _this._commandEncoding[command].name];
+	      }), socket.id);
 
 	      _this.sendCommand(CMD_READY, "", socket.id);
 

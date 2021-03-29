@@ -234,7 +234,7 @@ class SocketServer extends SocketBase {
 
 
 		// Send initial data to the client
-		this.sendCommand(CMD_COMMAND_MAP, this._commandMap, socket.id);
+		this.sendCommand(CMD_COMMAND_MAP, this._commandMap.map((command) => [command, this._commandEncoding[command].name]), socket.id);
 		this.sendCommand(CMD_READY, "", socket.id);
 
 		this.emit(EVT_CLIENT_CONNECTED, socket.id);

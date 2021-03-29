@@ -43,15 +43,9 @@ class SocketBase extends Emitter {
 	_requestById = {};
 	_responseCallbackByRequestId = {};
 	_dictionary = [];
-	_commandMap = [CMD_PING, CMD_COMMAND_MAP, CMD_DEFINE_COMMAND, CMD_READY, CMD_REQUEST, CMD_RESPONSE, CMD_MESSAGE];
+	_commandMap = [];
 	_commandEncoding = {
-		"*": encoders.jsonEncoder,
-		[CMD_COMMAND_MAP]: encoders.stringArrayEncoder,
-		[CMD_DEFINE_COMMAND]: encoders.stringArrayEncoder,
-		[CMD_READY]: encoders.noDataEncoder,
-		[CMD_REQUEST]: encoders.jsonEncoder,
-		[CMD_RESPONSE]: encoders.jsonEncoder,
-		[CMD_MESSAGE]: encoders.jsonEncoder
+		"*": encoders.jsonEncoder
 	};
 	_state = STA_DISCONNECTED;
 	_logging = false;
@@ -64,6 +58,14 @@ class SocketBase extends Emitter {
 		super();
 		this._name = name;
 		this._env = env;
+
+		this.defineCommand(CMD_PING, "noDataEncoder");
+		this.defineCommand(CMD_COMMAND_MAP, "jsonEncoder");
+		this.defineCommand(CMD_DEFINE_COMMAND, "stringArrayEncoder");
+		this.defineCommand(CMD_READY, "noDataEncoder");
+		this.defineCommand(CMD_REQUEST, "jsonEncoder");
+		this.defineCommand(CMD_RESPONSE, "jsonEncoder");
+		this.defineCommand(CMD_MESSAGE, "noDataEncoder");
 		this.generateDictionary();
 	}
 
@@ -150,7 +152,7 @@ class SocketBase extends Emitter {
 	 * `decode()` functions.
 	 * @returns {Number} The id of the command.
 	 */
-	defineCommand (command, encoderNameOrObject = "jsonEncoder") {
+	defineCommand (command, encoderNameOrObject= "jsonEncoder") {
 		let encoderName;
 		let encoder;
 
@@ -163,18 +165,25 @@ class SocketBase extends Emitter {
 			encoder = encoders[encoderNameOrObject];
 		}
 
+		this.log("New command defined", command, encoderName);
+
 		// Add the new command
 		this._dictionary.push(command);
 		this._commandMap.push(command);
-		this._commandEncoding[command] = encoder;
+		this.setCommandEncoding(command, encoder);
 
 		this.log(`Defined new command "${command}"`);
 
 		if (this._env === ENV_CLIENT) return this._commandMap.length - 1;
 
 		// Update any connected clients with the new command
-		this.sendCommand(CMD_DEFINE_COMMAND, [command, encoderName || this.encoderNameByObject(encoder)]);
+		this.broadcastCommand(CMD_DEFINE_COMMAND, [command, encoder.name]);
 		return this._commandMap.length - 1;
+	}
+
+	setCommandEncoding (command = "", encoderNameOrObj = "jsonEncoder") {
+		if (!command || !encoderNameOrObj) return;
+		this._commandEncoding[command] = this.resolveEncoder(encoderNameOrObj);
 	}
 
 	/**
@@ -187,6 +196,14 @@ class SocketBase extends Emitter {
 		return Object.entries(encoders).reduce((name, [key, encoder]) => {
 			return encoder === obj ? key : "";
 		}, "");
+	}
+
+	resolveEncoder (encoder) {
+		if (typeof encoder === "string") {
+			return encoders[encoder];
+		}
+
+		return encoder;
 	}
 
 	/**

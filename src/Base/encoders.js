@@ -1,4 +1,5 @@
 const jsonEncoder = {
+	"name": "jsonEncoder",
 	"encode": (data) => {
 		if (data === undefined) return "";
 		return JSON.stringify(data);
@@ -18,6 +19,7 @@ const jsonEncoder = {
 };
 
 const stringArrayEncoder = {
+	"name": "stringArrayEncoder",
 	"encode": (data = []) => {
 		return data.join(",");
 	},
@@ -27,6 +29,7 @@ const stringArrayEncoder = {
 };
 
 const booleanArrayEncoder = {
+	"name": "booleanArrayEncoder",
 	"encode": (data = []) => {
 		return data.join(",");
 	},
@@ -36,6 +39,7 @@ const booleanArrayEncoder = {
 };
 
 const noDataEncoder = {
+	"name": "noDataEncoder",
 	"encode": () => {
 		return undefined;
 	},

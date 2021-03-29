@@ -1,5 +1,6 @@
 const {Client, EVT_CONNECTED, EVT_READY, CMD_REQUEST, CMD_MESSAGE} = IrrelonSockets;
 const client = new Client();
+client.enableLogging();
 
 client.on(EVT_CONNECTED, () => {
 	console.log("connected");

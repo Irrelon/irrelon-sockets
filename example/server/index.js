@@ -9,6 +9,8 @@ const {
 } = require("../../src/index");
 
 const server = new Server();
+server.enableLogging();
+server.defineCommand("foo", "jsonEncoder");
 
 server.on(EVT_STARTED, ({port}) => {
 	console.log("Started on port", port);

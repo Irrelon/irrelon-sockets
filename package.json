@@ -1,6 +1,6 @@
 {
 	"name": "@irrelon/sockets",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "",
 	"module": "dist/built/index.js",
 	"scripts": {
@@ -8,7 +8,8 @@
 		"build": "npm run clean && webpack --config webpack/base.config.js",
 		"webserver": "webpack-dev-server --port 3001 --config webpack/development.config.js --progress --colors --hot --content-base example/client",
 		"server": "node ./example/server/index.js",
-		"build-watch": "node webpack/buildWatch.js"
+		"build-watch": "node webpack/buildWatch.js",
+		"test": "jest"
 	},
 	"author": "Irrelon Software Limited - Rob Evans",
 	"repository": {
@@ -32,6 +33,7 @@
 		"babel-loader": "8.1.0",
 		"debounce": "^1.2.1",
 		"eslint": "^7.21.0",
+		"jest": "^26.6.3",
 		"node-watch": "^0.7.1",
 		"rimraf": "^2.5.0",
 		"webpack": "^1.12.3",
