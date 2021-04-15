@@ -195,3 +195,4 @@ describe("Server", () => {
 		});
 	});
 });
+// TODO - Create "command" unit tests to cover command() and onCommand()
