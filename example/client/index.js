@@ -10,13 +10,13 @@ client.on(EVT_READY, () => {
 	console.log("ready");
 });
 
-client.sendRequest("aClientRequest", {
+client.request("aClientRequest", {
 	"data": true
 }, (responseData) => {
 	console.log("Got aClientRequest response", responseData);
 });
 
-client.on(CMD_REQUEST, "aServerRequest", (data, response, socketId) => {
+client.onRequest("aServerRequest", (data, response) => {
 	response({
 		"hello": true
 	});
@@ -26,11 +26,17 @@ client.GET("/test").then((response) => {
 	console.log("GET response was", response);
 });
 
-client.send({"foo": true});
-client.on(CMD_MESSAGE, (data) => {
+client.message({"foo": true});
+client.onMessage((data) => {
 	console.log("Message", data);
 });
 
-client.sendCommand("myCommandName", {"foo": true});
+client.command("myCommandName", {"foo": true});
+
+client.subscribe("myChannel", (data) => {
+	console.log("Channel received data", data);
+}).then((result) => {
+	console.log("Subscribe result", result);
+});
 
 client.connect("ws://localhost:9999");

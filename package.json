@@ -1,7 +1,7 @@
 {
 	"name": "@irrelon/sockets",
-	"version": "0.0.3",
-	"description": "",
+	"version": "0.0.4",
+	"description": "A high performance socket library that provides pub/sub, request/response and general messaging services.",
 	"module": "dist/built/index.js",
 	"scripts": {
 		"clean": "rimraf dist",

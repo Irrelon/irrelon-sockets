@@ -9,6 +9,7 @@ const {
 	STA_READY,
 	STA_STARTED,
 	STA_STOPPED,
+	STA_DISCONNECTING,
 
 	// Environments
 	ENV_CLIENT,
@@ -22,6 +23,8 @@ const {
 	CMD_READY,
 	CMD_REQUEST,
 	CMD_RESPONSE,
+	CMD_SUBSCRIBE,
+	CMD_PUBLISH,
 
 	// Events
 	EVT_COMMAND,
@@ -36,13 +39,15 @@ const {
 	EVT_STARTED,
 	EVT_STOPPED,
 	EVT_CLIENT_CONNECTED,
-	EVT_CLIENT_DISCONNECTED
+	EVT_CLIENT_DISCONNECTED,
+	EVT_SUBSCRIBED
 } = require("../Base/enums");
 
 class SocketClient extends SocketBase {
 	_backoff = 1000;
 	_buffer = [];
 	_autoReconnect = true;
+	_subscriptions = {};
 
 	constructor (clientName = "Client") {
 		super(ENV_CLIENT, clientName);
@@ -51,22 +56,52 @@ class SocketClient extends SocketBase {
 		this.on(EVT_COMMAND, CMD_COMMAND_MAP, this._onCommandMap);
 		this.on(EVT_COMMAND, CMD_DEFINE_COMMAND, this._onDefineCommand);
 		this.on(EVT_COMMAND, CMD_READY, this._onReadyCommand);
+		this.on(CMD_REQUEST, CMD_SUBSCRIBE, (data = {}, response) => {
+			const {channelName} = data;
+			if (!channelName) return response({"err": "No channel name provided!", "success": false, channelName});
+
+			this._subscriptions[channelName] = this._subscriptions[channelName] || [];
+			this._subscriptions[channelName] = true;
+			response({"err": null, "success": true, channelName});
+		});
 	}
 
-	connect (host) {
-		// Check if we are already connected
-		if (this.state() === STA_CONNECTED) {
-			return;
-		}
+	connect (host, callback) {
+		return new Promise((resolve, reject) => {
+			let proxyResolve = resolve;
+			let proxyReject = reject;
+			let proxyCallback = callback;
 
-		this.state(STA_CONNECTING);
+			// Check if we are already connected
+			if (this.state() === STA_CONNECTED) {
+				return;
+			}
 
-		this._host = host;
-		this._socket = new WebSocket(host);
-		this._socket.onopen = this._onConnected;
-		this._socket.onclose = this._onUnexpectedDisconnect;
-		this._socket.onmessage = this._onMessageFromServer;
-		this._socket.onerror = this._onSocketError;
+			this.state(STA_CONNECTING);
+
+			this._host = host;
+			this._socket = new WebSocket(host);
+			this._socket.onopen = () => {
+				this._onConnected();
+				if (callback) { proxyCallback(); }
+				proxyResolve();
+
+				proxyResolve = () => {};
+				proxyReject = () => {};
+				proxyCallback = () => {};
+			};
+			this._socket.onclose = this._onUnexpectedDisconnect;
+			this._socket.onmessage = this._onMessageFromServer;
+			this._socket.onerror = (err) => {
+				this._onSocketError(err);
+				if (callback) { proxyCallback(err); }
+				proxyReject(err);
+
+				proxyResolve = () => {};
+				proxyReject = () => {};
+				proxyCallback = () => {};
+			};
+		});
 	}
 
 	reconnect () {
@@ -83,105 +118,87 @@ class SocketClient extends SocketBase {
 	}
 
 	disconnect () {
-		this.state(STA_DISCONNECTED);
+		this.log("Disconnecting by request");
+		this.state(STA_DISCONNECTING);
+
+		this._socket.onclose = () => {
+			this.state(STA_DISCONNECTED);
+			delete this._socket;
+		};
 
 		try {
 			this._socket.terminate();
-			delete this._socket;
 		} catch (err) {
 			console.error("Error terminating connection", err);
 		}
 	}
 
-	sendCommand (cmd, data) {
+	command (command, data, options) {
 		if (this.state() !== STA_READY) {
 			// Buffer the message and send when connected
-			this._buffer.push({
-				"type": "sendCommand",
-				cmd,
-				data
+			this._bufferMessage({
+				"method": "command",
+				"args": [
+					command,
+					data,
+					options
+				]
 			});
 			return;
 		}
 
-		return super.sendCommand(cmd, data, this._socket);
+		return super.command(command, data, this._socket, options);
 	}
 
-	processBuffer () {
-		this._buffer.forEach((bufferItem) => {
-			switch (bufferItem.type) {
-				case "sendCommand":
-					this.sendCommand(bufferItem.cmd, bufferItem.data);
-					break;
+	request (requestName, data, callback) {
+		if (typeof callback === "undefined" && typeof data === "function") {
+			callback = data;
+			data = undefined;
+		}
 
-				case "sendRequest":
-					this.sendRequest(bufferItem.requestName, bufferItem.data, bufferItem.callback);
-					break;
-
-				default:
-					break;
-			}
-		});
-
-		this._buffer = [];
-	}
-
-	sendRequest (requestName, data, callback) {
 		if (this.state() !== STA_READY) {
 			// Buffer the message and send when connected
-			this._buffer.push({
-				"type": "sendRequest",
-				requestName,
-				data,
-				callback
+			this._bufferMessage({
+				"method": "request",
+				"args": [
+					requestName,
+					data,
+					callback
+				]
 			});
 			return;
 		}
 
+		// TODO: The request id is being defined by the client! This could
+		//   lead to collisions and other nasty things. Fix this somehow!
 		const requestId = hexId();
 		this._responseCallbackByRequestId[requestId] = callback;
 
-		super.sendRequest(requestName, requestId, data, this._socket);
+		super.request(requestName, requestId, data, this._socket);
 	}
 
-	sendResponse (requestId, responseData) {
-		this.sendCommand(CMD_RESPONSE, {"id": requestId, "data": responseData});
-	}
-
-	GET (url, data) {
-		return new Promise((resolve, reject) => {
-			this.sendRequest("GET", {url, "body": data}, (responseData) => {
-				resolve(responseData);
+	response (requestId, data) {
+		if (this.state() !== STA_READY) {
+			// Buffer the message and send when connected
+			this._bufferMessage({
+				"method": "response",
+				"args": [
+					requestId,
+					data
+				]
 			});
-		});
-	}
+			return;
+		}
 
-	POST (url, data) {
-		return new Promise((resolve, reject) => {
-			this.sendRequest("POST", {url, "body": data}, (responseData) => {
-				resolve(responseData);
-			});
-		});
-	}
-
-	PUT (url, data) {
-		return new Promise((resolve, reject) => {
-			this.sendRequest("PUT", {url, "body": data}, (responseData) => {
-				resolve(responseData);
-			});
-		});
-	}
-
-	DELETE (url, data) {
-		return new Promise((resolve, reject) => {
-			this.sendRequest("DELETE", {url, "body": data}, (responseData) => {
-				resolve(responseData);
-			});
-		});
+		super.response(requestId, data, this._socket);
 	}
 
 	send (data) {
-		this.sendCommand(CMD_MESSAGE, data);
+		this.command(CMD_MESSAGE, data);
+	}
+
+	message (data) {
+		this.send(data);
 	}
 
 	autoReconnect (val) {
@@ -189,6 +206,82 @@ class SocketClient extends SocketBase {
 		this._autoReconnect = val;
 
 		return this;
+	}
+
+	subscribe (channelName, data, onChannelDataHandler) {
+		if (typeof onChannelDataHandler === "undefined" && typeof data === "function") {
+			onChannelDataHandler = data;
+			data = undefined;
+		}
+
+		return new Promise((resolve, reject) => {
+			this.request(CMD_SUBSCRIBE, {channelName, data}, (responseData) => {
+				this.onCommand(CMD_PUBLISH, (eventData, socketId, eventChannelName) => {
+					if (channelName !== eventChannelName) return;
+					onChannelDataHandler(eventData);
+				});
+
+				resolve(responseData);
+			});
+		});
+	}
+
+	publish (channelName, data) {
+		if (!this._subscriptions || !this._subscriptions[channelName]) return;
+		this.log("publish()", channelName, data);
+
+		this.command(CMD_PUBLISH, data, {channelName});
+	}
+
+	GET (url, data) {
+		return new Promise((resolve, reject) => {
+			this.request("GET", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
+	POST (url, data) {
+		return new Promise((resolve, reject) => {
+			this.request("POST", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
+	PUT (url, data) {
+		return new Promise((resolve, reject) => {
+			this.request("PUT", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
+	DELETE (url, data) {
+		return new Promise((resolve, reject) => {
+			this.request("DELETE", {url, "body": data}, (responseData) => {
+				resolve(responseData);
+			});
+		});
+	}
+
+	_bufferMessage (data) {
+		this._buffer.push(data);
+	}
+
+	_processBuffer () {
+		this._buffer.forEach((bufferItem) => {
+			const bufferFunc = this[bufferItem.method];
+
+			if (!bufferFunc) {
+				this.log("Failed to execute buffered method, method name not found: ", bufferItem.method);
+				return;
+			}
+
+			bufferFunc.apply(this, bufferItem.args);
+		});
+
+		this._buffer = [];
 	}
 
 	_onConnected = () => {
@@ -200,7 +293,7 @@ class SocketClient extends SocketBase {
 	_onUnexpectedDisconnect = () => {
 		this.state(STA_DISCONNECTED);
 
-		this.log("Disconnected from server");
+		this.log("Disconnected from server unexpectedly!");
 		this.emit(EVT_DISCONNECTED);
 
 		if (!this._autoReconnect) return;
@@ -216,7 +309,8 @@ class SocketClient extends SocketBase {
 	}
 
 	_onMessageFromServer = (rawMessage) => {
-		super._onMessage(rawMessage.data);
+		this.log("_onMessageFromServer", rawMessage);
+		super._onRawMessage(rawMessage.data);
 	}
 
 	_onCommandMap = (data) => {
@@ -240,10 +334,11 @@ class SocketClient extends SocketBase {
 	}
 
 	_onReadyCommand = (data) => {
+		this.socketId = data.id;
 		this.log("_onReadyCommand", data);
 		this.state(STA_READY);
 		this.emit(CMD_READY);
-		this.processBuffer();
+		this._processBuffer();
 	}
 
 	_onRequest (requestName, requestId, data, response) {

@@ -5,7 +5,8 @@ const {
 	EVT_COMMAND,
 	EVT_CLIENT_CONNECTED,
 	CMD_REQUEST,
-	CMD_MESSAGE
+	CMD_MESSAGE,
+	CMD_SUBSCRIBE
 } = require("../../src/index");
 
 const server = new Server();
@@ -23,23 +24,23 @@ server.on(EVT_STOPPED, () => {
 server.on(EVT_CLIENT_CONNECTED, (socketId) => {
 	console.log("Client connected", socketId);
 
-	server.sendRequest("aServerRequest", {
+	server.request("aServerRequest", {
 		"data": true
 	}, (responseData) => {
 		console.log("Got aServerRequest response", responseData);
 	}, socketId);
 
-	server.send({"foo": true}, socketId);
+	server.message({"foo": true}, socketId);
 });
 
-server.on(CMD_REQUEST, "aClientRequest", (data, response, socketId) => {
+server.onRequest("aClientRequest", (data, response, socketId) => {
 	console.log("Server received request", data, socketId, response);
 	response({
 		"hello": true
 	});
 });
 
-server.on(EVT_COMMAND, "myCommandName", (data, socketId) => {
+server.onCommand( "myCommandName", (data, socketId) => {
 	console.log("Command myCommandName", data, socketId);
 });
 
@@ -47,8 +48,12 @@ server.GET("/test", (req, res) => {
 	res.send({"GET RESPONSE": true});
 });
 
-server.on(CMD_MESSAGE, (data) => {
+server.onMessage((data) => {
 	console.log("Message", data);
 });
+
+setInterval(() => {
+	server.publish("myChannel", {"myData": true});
+}, 1000);
 
 server.start(9999);

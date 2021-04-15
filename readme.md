@@ -80,7 +80,7 @@ the async nature of the websockets protocol.
 > Data sent in requests is automatically encoded with JSON.stringify.
 >
 ```js
-client.sendRequest("myRequest", {foo: true}, (responseData) => {
+client.request("myRequest", {foo: true}, (responseData) => {
     // responseData: {gotYa: true}
 });
 ```
@@ -102,7 +102,7 @@ server.on(CMD_REQUEST, "myRequest", (data, response, socketId) => {
 
 ### Sending a Command
 ```js
-client.sendCommand("myCommandName", {foo: true});
+client.command("myCommandName", {foo: true});
 ```
 
 ### Receiving a Command

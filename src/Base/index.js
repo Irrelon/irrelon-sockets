@@ -1,5 +1,6 @@
 const {Emitter} = require("@irrelon/emitter");
 const encoders = require("./encoders");
+const Message = require("./Message");
 const {
 	// States
 	STA_DISCONNECTED,
@@ -21,6 +22,8 @@ const {
 	CMD_READY,
 	CMD_REQUEST,
 	CMD_RESPONSE,
+	CMD_SUBSCRIBE,
+	CMD_PUBLISH,
 
 	// Events
 	EVT_COMMAND,
@@ -38,6 +41,12 @@ const {
 	EVT_CLIENT_DISCONNECTED
 } = require("./enums");
 
+/**
+ * @typedef {object} SendCommandOptions
+ * @property {string} [channelName] If specified, only transmits
+ * this command on the specified channel.
+ */
+
 class SocketBase extends Emitter {
 	_socketById = {};
 	_requestById = {};
@@ -49,6 +58,7 @@ class SocketBase extends Emitter {
 	};
 	_state = STA_DISCONNECTED;
 	_logging = false;
+	_commandHandler = {};
 
 	/**
 	 * @param {string} env The environment for the SocketBase instance.
@@ -62,10 +72,35 @@ class SocketBase extends Emitter {
 		this.defineCommand(CMD_PING, "noDataEncoder");
 		this.defineCommand(CMD_COMMAND_MAP, "jsonEncoder");
 		this.defineCommand(CMD_DEFINE_COMMAND, "stringArrayEncoder");
-		this.defineCommand(CMD_READY, "noDataEncoder");
+		this.defineCommand(CMD_READY, "jsonEncoder");
 		this.defineCommand(CMD_REQUEST, "jsonEncoder");
 		this.defineCommand(CMD_RESPONSE, "jsonEncoder");
-		this.defineCommand(CMD_MESSAGE, "noDataEncoder");
+		this.defineCommand(CMD_MESSAGE, "jsonEncoder");
+		this.defineCommand(CMD_SUBSCRIBE, "jsonEncoder");
+		this.defineCommand(CMD_PUBLISH, "jsonEncoder");
+
+		this._commandHandler[CMD_REQUEST] = ({requestId, requestName, data, socketId}) => {
+			if (!requestId) {
+				return this.log("Request received without a request id!");
+			}
+
+			this._onRequest(requestName, requestId, data, (responseData) => {
+				this.response(requestId, responseData);
+			}, socketId);
+		};
+
+		this._commandHandler[CMD_RESPONSE] = ({requestId, data}) => {
+			if (!requestId) {
+				return this.log("Response received without a request id!");
+			}
+
+			this._onResponse(requestId, data);
+		};
+
+		this._commandHandler[CMD_MESSAGE] = ({message, commandId, command, data, rawMessage, socketId}) => {
+			this.emit(EVT_MESSAGE, data, socketId);
+		};
+
 		this.generateDictionary();
 	}
 
@@ -93,10 +128,10 @@ class SocketBase extends Emitter {
 
 	/**
 	 * Gets or sets the current instance state.
-	 * @param {string} [newState] Optional. If provided, sets the current
+	 * @param {string|number} [newState] Optional. If provided, sets the current
 	 * instance state to the passed state value. If not provided the function
 	 * operates as a getter and the current state is returned instead.
-	 * @returns {SocketBase|String} State or self.
+	 * @returns {SocketBase|String|Number} State or self.
 	 */
 	state = (newState) => {
 		if (newState === undefined) return this._state;
@@ -156,7 +191,7 @@ class SocketBase extends Emitter {
 		let encoderName;
 		let encoder;
 
-		const existingCommandId = this.idByCommand(command);
+		const existingCommandId = this._idByCommand(command);
 		if (existingCommandId > -1) return existingCommandId;
 
 		if (typeof encoderNameOrObject === "string") {
@@ -183,7 +218,137 @@ class SocketBase extends Emitter {
 
 	setCommandEncoding (command = "", encoderNameOrObj = "jsonEncoder") {
 		if (!command || !encoderNameOrObj) return;
-		this._commandEncoding[command] = this.resolveEncoder(encoderNameOrObj);
+		this._commandEncoding[command] = this._resolveEncoder(encoderNameOrObj);
+	}
+
+	/**
+	 * Sends a command to the specified socket.
+	 * @param {String} command The command to send.
+	 * @param {*} data The data to send.
+	 * @param {*} socket The socket to send to.
+	 * @param {SendCommandOptions} [options] The options object.
+	 * @returns {undefined} Nothing.
+	 */
+	command (command, data, socket, options= {}) {
+		if (!socket) return this.log("command() no socket provided!", command, data, socket, options);
+		if (socket.constructor.name !== "WebSocket") {
+			return this.log("command() No websocket instance provided!", command, data, socket, options);
+		}
+
+		const {channelName} = options;
+		const commandId = this.defineCommand(command);
+
+		socket.send(this._encode({command, commandId, data, channelName}));
+	}
+
+	request (requestName, requestId, data, socket) {
+		this.log("request()", requestName, requestId, data, socket);
+		if (!socket) return this.log("request() no socket provided!", requestName, requestId, data, socket);
+
+		const commandId = this.defineCommand(CMD_REQUEST);
+
+		socket.send(this._encode({
+			"command": CMD_REQUEST,
+			commandId,
+			data,
+			requestId,
+			requestName
+		}));
+	}
+
+	response (requestId, data, socket) {
+		this.log("response()", requestId, data, socket);
+		if (!socket) return this.log("response() no socket provided!", requestId, data, socket);
+
+		const commandId = this.defineCommand(CMD_RESPONSE);
+
+		socket.send(this._encode({
+			"command": CMD_REQUEST,
+			commandId,
+			data,
+			requestId
+		}));
+	}
+
+	onRequest (requestName, eventHandler) {
+		this.on(CMD_REQUEST, requestName, eventHandler);
+	}
+
+	offRequest (requestName, eventHandler) {
+		this.off(CMD_REQUEST, requestName, eventHandler);
+	}
+
+	onCommand (commandName, eventHandler) {
+		this.on(EVT_COMMAND, commandName, eventHandler);
+	}
+
+	offCommand (commandName, eventHandler) {
+		this.off(EVT_COMMAND, commandName, eventHandler);
+	}
+
+	onMessage (eventHandler) {
+		this.on(EVT_MESSAGE, eventHandler);
+	}
+
+	offMessage (eventHandler) {
+		this.off(EVT_MESSAGE, eventHandler);
+	}
+
+	_onRawMessage (rawMessage, socketId) {
+		this.log(`Raw message incoming (socketId: ${socketId})`, rawMessage);
+
+		const message = this._decode(rawMessage);
+		const {
+			commandId,
+			data,
+			channelName,
+			requestId,
+			requestName
+		} = message;
+
+		const command = this._commandById(commandId);
+
+		if (!command) {
+			console.error(`Unknown commandId "${commandId}" received with data`, data, "on channel", channelName);
+			return message;
+		}
+
+		message.rawMessage = rawMessage;
+		message.socketId = socketId;
+		message.command = command;
+
+		this.log(`Incoming command "${command}" with data`, data, "on channel", channelName);
+
+		const commandHandler = this._commandHandler[command];
+
+		if (commandHandler) {
+			commandHandler(message);
+		} else {
+			this.emitId(EVT_COMMAND, command, data, socketId, channelName);
+		}
+
+		return message;
+	}
+
+	_onRequest (requestName, requestId, data, response, socketId = "") {
+		this.emitId(CMD_REQUEST, requestName, data, response, socketId);
+	}
+
+	_encode (message) {
+		const encoding = this._commandEncoding[message.command] || this._commandEncoding["*"];
+		message.data = encoding.encode(message.data);
+
+		return Message(message);
+	}
+
+	_decode (message) {
+		const msg = Message(message);
+		const command = this._commandById(msg.commandId);
+		const encoding = this._commandEncoding[command] || this._commandEncoding["*"];
+
+		msg.data = encoding.decode(msg.data);
+
+		return msg;
 	}
 
 	/**
@@ -192,13 +357,22 @@ class SocketBase extends Emitter {
 	 * @returns {String} The name of the encoder or a blank
 	 * string if not found.
 	 */
-	encoderNameByObject (obj) {
+	_encoderNameByObject (obj) {
 		return Object.entries(encoders).reduce((name, [key, encoder]) => {
 			return encoder === obj ? key : "";
 		}, "");
 	}
 
-	resolveEncoder (encoder) {
+	/**
+	 * Checks if the passed encoder is a string name
+	 * or an actual encoder object. If it is a string name,
+	 * returns the encoder object matching the name.
+	 * @param {Object|String} encoder The name or the encoder
+	 * object.
+	 * @returns {Object|undefined} Either the encoder object
+	 * or undefined if it does not exist.
+	 */
+	_resolveEncoder (encoder) {
 		if (typeof encoder === "string") {
 			return encoders[encoder];
 		}
@@ -211,113 +385,12 @@ class SocketBase extends Emitter {
 	 * @param {Number} id The id of the commmand to find.
 	 * @returns {String} The name of the command.
 	 */
-	commandById (id) {
+	_commandById (id) {
 		return this._commandMap[id];
 	}
 
-	idByCommand (command) {
+	_idByCommand (command) {
 		return this._commandMap.indexOf(command);
-	}
-
-	/**
-	 * Sends a command to the specified socket.
-	 * @param {String} cmd The command to send.
-	 * @param {*} data The data to send.
-	 * @param {*} socket The socket to send to.
-	 * @returns {undefined} Nothing.
-	 */
-	sendCommand (cmd, data, socket) {
-		if (!socket) return this.log("sendCommand() no socket provided!", cmd, data, socket);
-
-		const commandId = this.defineCommand(cmd);
-		const message = [commandId, data];
-
-		this.log("sendCommand", message);
-
-		socket.send(this._encode(cmd, message));
-	}
-
-	sendRequest (requestName, requestId, data, socket) {
-		this.log("sendRequest()", requestName, requestId, data, socket);
-		if (!socket) return this.log("request() no socket provided!", requestName, requestId, data, socket);
-
-		const commandId = this.defineCommand(CMD_REQUEST);
-		const message = [commandId, {"id": requestId, requestName, data}];
-
-		this.log("request message payload", message);
-
-		socket.send(this._encode(CMD_REQUEST, message));
-	}
-
-	_onMessage (rawMessage, socketId) {
-		this.log("Raw message incoming", rawMessage, "socketId", socketId);
-
-		const message = this._decode(rawMessage);
-		const commandId = message[0];
-		const data = message[1];
-		const command = this.commandById(commandId);
-
-		if (!command) {
-			console.error(`Unknown commandId "${commandId}" received with data`, data);
-			return {
-				message,
-				commandId,
-				command,
-				data
-			};
-		}
-
-		this.log(`Incoming command "${command}" with data`, data);
-
-		if (command === CMD_REQUEST) {
-			if (data.id) {
-				this._onRequest(data.requestName, data.id, data.data, (responseData) => {
-					this.sendResponse(data.id, responseData);
-				}, socketId);
-			} else {
-				this.log("Request received without a request id!");
-			}
-		} else if (command === CMD_RESPONSE) {
-			if (data.id) {
-				this._onResponse(data.id, data.data);
-			} else {
-				this.log("Response received without a request id!");
-			}
-		} else if (command === CMD_MESSAGE) {
-			this.emit(EVT_MESSAGE, data, socketId);
-		} else {
-			this.emitId(EVT_COMMAND, command, data, socketId);
-		}
-
-		return {
-			message,
-			commandId,
-			command,
-			data
-		};
-	}
-
-	_onRequest (requestName, requestId, data, response, socketId = "") {
-		this.emitId(CMD_REQUEST, requestName, data, response, socketId);
-	}
-
-	_encode (command, [commandId, data]) {
-		const encoding = this._commandEncoding[command] || this._commandEncoding["*"];
-		if (!this._commandEncoding[command]) console.warn(`No specific encoder for command "${command}" (${commandId})`);
-		if (!encoding) throw new Error(`No command encoding for "${command}" (${commandId}) and no default encoder specified under the "*" command name!`);
-
-		return `${commandId}|${encoding.encode(data)}`;
-	}
-
-	_decode (data) {
-		const parts = data.split("|");
-		const command = this.commandById(parts[0]);
-		const encoding = this._commandEncoding[command] || this._commandEncoding["*"];
-
-		if (!this._commandEncoding[command]) console.warn(`No specific decoder for command "${command}" (${parts[0]})`);
-		if (!encoding) throw new Error(`No command decoding for "${command}" (${parts[0]}) and no default decoder specified under the "*" command name!`);
-
-		return [parts[0], encoding.decode(parts[1])];
 	}
 }
 
