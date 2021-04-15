@@ -1,4 +1,8 @@
 # Irrelon Sockets
+A powerful websockets library that includes features like pub/sub,
+request/response and automatic data encoding and compression.
+
+> This library is still in beta and the interface may change as it matures.
 
 ## Install
 ```bash
@@ -13,7 +17,7 @@ yarn add @irrelon/sockets
 
 ## Including in Your Project
 
-#### Browser (Client)
+#### Client (Browser)
 Include the library in your project. The library is exported
 via webpack to a global name "IrrelonSockets".
 
@@ -24,7 +28,7 @@ via webpack to a global name "IrrelonSockets".
 The library will then be available in the global scope as
 `IrrelonSockets` or `window.IrrelonSockets`.
 
-#### Node.js (Server)
+#### Server (Node.js)
 The library can be required in the normal way:
 
 ```js
@@ -56,14 +60,16 @@ server.start(9999);
 > Data sent in messages is automatically encoded with JSON.stringify.
 
 ```js
-client.send({foo: true});
+client.message({foo: true});
 ```
 
 ### Receiving a Basic Message
 > Data received is automatically decoded with JSON.parse.
+
+socketId - The id of the client that sent the message.
  
 ```js
-server.on(CMD_MESSAGE, (data, socketId) => {
+server.onMessage((data, socketId) => {
     // data: {foo: true}
 });
 ```
@@ -90,7 +96,7 @@ client.request("myRequest", {foo: true}, (responseData) => {
 is automatically encoded with JSON.stringify.
 
 ```js
-server.on(CMD_REQUEST, "myRequest", (data, response, socketId) => {
+server.onRequest("myRequest", (data, response, socketId) => {
     // data: {foo: true}
     // response: a function to send a response
     // socketId: the id of the client that sent the request
@@ -98,22 +104,58 @@ server.on(CMD_REQUEST, "myRequest", (data, response, socketId) => {
 })
 ```
 
+## Pub/Sub
+
+### Subscribing to a Channel
+```js
+client.subscribe("MyChannel", (data) => {
+    console.log("Some data was sent on MyChannel");
+}).then((result) => {
+    if (result.err) console.log("An error occured when trying to subscribe!");
+});
+```
+
+### Publishing to a Channel
+```js
+server.publish("MyChannel", {someData: "foo"});
+```
+
 ## Commands
+Commands are different from basic messages in that they also have a name.
+You can specify a handler for each command you define.
+
+Commands must be defined on the server before they are used.
+
+### Defining a Command
+A command has a name and an encoder type. For now, simply use "jsonEncoder"
+for the encoder type. This will automatically stringify/parse any data sent
+or received with this command.
+
+```js
+server.defineCommand("myCommandName", "jsonEncoder");
+```
 
 ### Sending a Command
 ```js
 client.command("myCommandName", {foo: true});
 ```
 
+### Sending a Command to a Specific Client
+```js
+server.command("myCommandName", {foo: true}, socketId);
+```
+
 ### Receiving a Command
 ```js
-server.on(EVT_COMMAND, "myCommandName", (data, socketId) => {
+server.onCommand("myCommandName", (data, socketId) => {
     // data: {foo: true}
 });
 ```
 
 # Encoding and Compression
-Under the hood the library keeps track of command strings and encodes them to binary representations rather than sending the entire string. Other compression techniques may also be employed.
+Under the hood the library keeps track of command strings and encodes
+them to binary representations rather than sending the entire string.
+Other compression techniques may also be employed.
 
 # API Reference
 Client.send(`data`)
